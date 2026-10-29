@@ -1,0 +1,644 @@
+.record-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.record-heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.record-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 24px 0;
+}
+.record-search {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+  min-width: 240px;
+}
+.record-search > svg {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  width: 19px;
+  height: 19px;
+  color: #374151;
+}
+.record-search input {
+  width: 100%;
+  padding-left: 44px;
+  background: #fff;
+}
+.record-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.record-filter label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.record-filter select {
+  min-width: 146px;
+}
+.record-count {
+  font-size: 0.875rem;
+}
+.record-notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px 18px;
+  border: 1px solid #aebbd8;
+  border-radius: 8px;
+  background: #f0f4fd;
+  color: #172c68;
+  line-height: 1.6;
+  font-size: 0.9375rem;
+}
+.record-notice > svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+}
+.record-notice .icon-button {
+  margin-left: auto;
+}
+.record-error {
+  padding: 14px 16px;
+  border: 1px solid #9f1239;
+  border-radius: 6px;
+  background: #fff1f2;
+  color: #881337;
+  font-size: 0.9375rem;
+}
+.record-form > p:first-child {
+  margin-top: 0;
+}
+.record-form fieldset {
+  padding: 0;
+  margin: 24px 0 0;
+  border: 0;
+  min-width: 0;
+}
+.record-form fieldset + fieldset {
+  padding-top: 24px;
+  border-top: 1px solid #d7dce2;
+}
+.record-form legend {
+  padding: 0;
+  margin-bottom: 16px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+}
+.record-form .field {
+  margin-bottom: 16px;
+}
+.record-field-help {
+  margin: -6px 0 18px;
+  font-size: 0.875rem;
+}
+.record-form .field .record-field-help {
+  margin: 8px 0 0;
+}
+.record-full {
+  grid-column: 1 / -1;
+}
+.record-form textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+.record-form .form-actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #d7dce2;
+}
+.record-checkboxes {
+  display: grid;
+  gap: 4px;
+}
+.record-checkbox {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 0.9375rem;
+}
+.record-checkbox input {
+  min-height: 22px;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  accent-color: #1e40af;
+  flex-shrink: 0;
+}
+.record-danger {
+  background: #881337 !important;
+  border-color: #881337 !important;
+  color: #fff !important;
+}
+.record-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+}
+.record-stats dt {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 6px;
+}
+.record-stats dd {
+  margin: 0;
+  color: #111827;
+  font-size: 1.25rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.record-stats dd span {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+}
+.record-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #d7dce2;
+}
+.record-card-actions .button {
+  min-height: 44px;
+  padding: 9px 14px;
+  font-size: 0.875rem;
+}
+.record-card-actions > .icon-button:last-child {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.record-notes {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.9375rem;
+  color: #374151;
+}
+.aircraft-grid,
+.flight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.aircraft-card,
+.flight-card {
+  min-width: 0;
+}
+.aircraft-card-top,
+.flight-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.aircraft-mark {
+  color: #374151;
+}
+.aircraft-mark svg {
+  height: 26px;
+  width: 26px;
+}
+.aircraft-identity {
+  margin-top: 24px;
+}
+.record-registration {
+  color: #111827;
+  letter-spacing: -0.035em;
+  font-size: 2rem;
+  font-weight: 750;
+  margin: 0 0 3px;
+  line-height: 1.25;
+}
+.aircraft-identity h2 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+  color: #374151;
+}
+.aircraft-drawing {
+  height: 112px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1e40af;
+  margin: 10px 0 20px;
+  border-radius: 6px;
+  background: #f7f8fa;
+}
+.aircraft-drawing svg {
+  width: 85%;
+  max-height: 110px;
+}
+.aircraft-stats {
+  padding-bottom: 20px;
+  border-bottom: 1px solid #d7dce2;
+}
+.aircraft-limit {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  font-size: 0.875rem;
+  color: #374151;
+}
+.aircraft-limit strong {
+  color: #111827;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.aircraft-equipment {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 14px 0 0;
+  font-size: 0.875rem;
+  color: #374151;
+}
+.aircraft-equipment svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  color: #166534;
+}
+.aircraft-details {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 6px;
+  background: #f7f8fa;
+}
+.aircraft-details .record-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.aircraft-details .record-stats dd {
+  font-size: 0.9375rem;
+}
+.record-flight-rules {
+  color: #374151;
+  font-size: 0.875rem;
+}
+.flight-route {
+  display: flex;
+  align-items: center;
+  margin: 28px 0 8px;
+  gap: 20px;
+}
+.flight-route .muted {
+  font-size: 0.875rem;
+}
+.flight-route h2,
+.flight-route .flight-destination p {
+  font-size: clamp(1.7rem, 3vw, 2.1rem);
+  letter-spacing: -0.04em;
+  line-height: 1.2;
+  margin: 4px 0 0;
+  color: #111827;
+  font-weight: 750;
+}
+.flight-destination {
+  text-align: right;
+}
+.flight-route-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1;
+  color: #1e40af;
+  padding-top: 20px;
+}
+.flight-route-line span {
+  height: 1px;
+  background: #b7c2d7;
+  flex: 1;
+}
+.flight-route-line svg {
+  width: 22px;
+  height: 22px;
+}
+.flight-route-text {
+  color: #374151;
+  font-size: 0.875rem;
+  margin: 0 0 24px;
+  overflow-wrap: anywhere;
+}
+.flight-stats {
+  border-top: 1px solid #d7dce2;
+  padding-top: 20px;
+}
+.flight-stats dd {
+  font-size: 0.9375rem;
+}
+.flight-check-progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 24px 0 9px;
+}
+.flight-check-progress > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.flight-check-progress svg {
+  width: 16px;
+  height: 16px;
+}
+.flight-check-progress strong {
+  color: #166534;
+  font-weight: 650;
+}
+.flight-progress-track {
+  height: 5px;
+  border-radius: 3px;
+  background: #e4e8e5;
+  overflow: hidden;
+}
+.flight-progress-track span {
+  display: block;
+  background: #166534;
+  height: 100%;
+}
+.record-detail-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  width: 100%;
+  border: 0;
+  padding: 12px 0 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e40af;
+  cursor: pointer;
+}
+.record-detail-toggle svg {
+  width: 16px;
+  height: 16px;
+  transform: rotate(90deg);
+}
+.record-detail-toggle[aria-expanded="true"] svg {
+  transform: rotate(-90deg);
+}
+.flight-details {
+  margin-top: 16px;
+  padding: 18px;
+  border-radius: 6px;
+  background: #f7f8fa;
+}
+.flight-details .record-stats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.flight-details .record-stats dd {
+  font-size: 0.9375rem;
+}
+.flight-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+  display: grid;
+  gap: 10px;
+}
+.flight-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  color: #374151;
+}
+.record-check {
+  display: inline-flex;
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid #6b7280;
+  border-radius: 3px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.record-check.is-checked {
+  background: #166534;
+  border-color: #166534;
+  color: #fff;
+}
+.record-check svg {
+  width: 13px;
+  height: 13px;
+}
+.flight-card .record-card-actions {
+  margin-top: 12px;
+}
+.logbook-totals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin: 26px 0;
+}
+.logbook-total {
+  position: relative;
+  padding: 22px !important;
+}
+.logbook-total-icon {
+  display: inline-flex;
+  padding: 8px;
+  background: #f0f3f9;
+  border-radius: 7px;
+  color: #1e40af;
+}
+.logbook-total-icon svg {
+  height: 19px;
+  width: 19px;
+}
+.logbook-total p {
+  color: #374151;
+  font-size: 0.875rem;
+  margin: 14px 0 4px;
+}
+.logbook-total strong {
+  display: block;
+  font-size: 2rem;
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #111827;
+}
+.logbook-total strong span {
+  font-size: 1rem;
+  font-weight: 500;
+}
+.logbook-total > .muted {
+  display: block;
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+.logbook-records {
+  padding-bottom: 12px !important;
+}
+.logbook-records .section-heading h2 {
+  margin-bottom: 2px;
+}
+.logbook-records .section-heading p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+.logbook-records .record-toolbar {
+  margin: 22px 0;
+}
+.logbook-table {
+  min-width: 920px;
+  width: 100%;
+}
+.logbook-table th {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.logbook-table td {
+  font-size: 0.875rem;
+}
+.logbook-date {
+  white-space: nowrap;
+}
+.logbook-route {
+  display: block;
+  color: #111827;
+  white-space: nowrap;
+  font-size: 0.875rem;
+}
+.logbook-route > span {
+  margin: 0 5px;
+  color: #4b5563;
+  font-weight: 400;
+}
+.logbook-aircraft {
+  display: block;
+  color: #4b5563;
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+.logbook-time-total {
+  font-weight: 700;
+  color: #111827;
+}
+.logbook-row-actions {
+  display: flex;
+  gap: 2px;
+}
+.logbook-row-actions .icon-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.logbook-row-actions svg {
+  width: 17px;
+  height: 17px;
+}
+.logbook-table tfoot {
+  background: #f7f8fa;
+  color: #111827;
+  font-weight: 650;
+}
+.logbook-table tfoot th {
+  text-align: left;
+  font-size: 0.875rem;
+}
+.record-table-note {
+  font-size: 0.875rem;
+  padding: 10px 0;
+}
+
+@media (max-width: 1100px) {
+  .logbook-totals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .record-card-actions .button {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+@media (max-width: 760px) {
+  .aircraft-grid,
+  .flight-grid {
+    grid-template-columns: 1fr;
+  }
+  .record-toolbar {
+    align-items: stretch;
+  }
+  .record-search {
+    max-width: none;
+    width: 100%;
+    min-width: 0;
+    flex-basis: 100%;
+  }
+  .record-filter {
+    justify-content: space-between;
+    width: 100%;
+  }
+  .record-filter select {
+    flex: 1;
+    max-width: 220px;
+  }
+  .record-stats {
+    gap: 10px;
+  }
+  .logbook-total {
+    padding: 18px !important;
+  }
+  .logbook-total strong {
+    font-size: 1.75rem;
+  }
+}
+@media (max-width: 420px) {
+  .logbook-totals {
+    gap: 10px;
+  }
+  .logbook-total {
+    padding: 14px !important;
+  }
+  .record-card-actions {
+    gap: 4px;
+  }
+  .record-card-actions .button {
+    padding: 8px;
+    font-size: 0.875rem;
+  }
+  .flight-route {
+    gap: 12px;
+  }
+  .flight-stats dd {
+    font-size: 0.875rem;
+  }
+  .aircraft-limit {
+    font-size: 0.875rem;
+  }
+}

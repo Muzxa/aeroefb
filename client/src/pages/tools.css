@@ -1,0 +1,671 @@
+.briefing-controls {
+  margin-bottom: 24px;
+}
+.briefing-search-grid {
+  grid-template-columns: minmax(180px, 1fr) minmax(220px, 1.35fr) auto;
+  align-items: start;
+}
+.briefing-load {
+  align-self: start;
+  margin-top: 30px;
+  white-space: nowrap;
+}
+.field-help {
+  font-size: 0.82rem;
+  line-height: 1.6;
+  margin: 7px 0 0;
+}
+.briefing-advisory {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 17px 20px;
+  border: 1px solid #bbcadf;
+  border-radius: 9px;
+  background: #f2f6fc;
+  color: #1b365c;
+  margin: 20px 0;
+  font-size: 0.87rem;
+  line-height: 1.65;
+}
+.briefing-advisory > svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 3px;
+}
+.briefing-advisory p {
+  margin: 0;
+}
+.briefing-advisory a {
+  color: #1e40af;
+}
+.briefing-empty {
+  padding-top: 48px;
+  padding-bottom: 48px;
+  text-align: center;
+}
+.briefing-empty > svg {
+  width: 40px;
+  height: 40px;
+  color: #1e40af;
+  margin-bottom: 12px;
+}
+.briefing-empty p {
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.briefing-source-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 28px 0 17px;
+}
+.briefing-source-row p {
+  margin: 0;
+  font-size: 0.82rem;
+}
+.weather-station-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+.station-card {
+  min-width: 0;
+}
+.station-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.station-title h2 {
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+}
+.station-icon,
+.tool-card-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #edf2fc;
+  color: #1e40af;
+  border-radius: 10px;
+}
+.station-icon svg,
+.tool-card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+.station-time {
+  font-size: 0.82rem;
+  margin: 0 0 22px;
+}
+.weather-readings {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 18px 0;
+  border-top: 1px solid #d5dbe4;
+  border-bottom: 1px solid #d5dbe4;
+}
+.weather-readings > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.weather-readings svg {
+  width: 19px;
+  height: 19px;
+  color: #1e40af;
+}
+.weather-readings span {
+  font-size: 0.82rem;
+  color: #4b5563;
+}
+.weather-readings strong {
+  font-size: 0.97rem;
+}
+.report-label {
+  color: #374151;
+  font-size: 0.82rem;
+  letter-spacing: 0.09em;
+  margin: 25px 0 9px;
+}
+.aviation-report {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  line-height: 1.85;
+  padding: 15px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #f4f6f9;
+  border: 1px solid #dce1e8;
+  border-radius: 7px;
+  color: #1f2937;
+}
+.missing-report {
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.tool-footnote {
+  font-size: 0.82rem;
+  color: #4b5563;
+  line-height: 1.8;
+  margin-top: 25px;
+}
+.tool-error {
+  background: #fff2ef;
+  color: #852c1c;
+  border: 1px solid #e2b1a5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 0.87rem;
+}
+.notam-overview {
+  display: flex;
+  gap: 35px;
+  padding: 8px 0 4px;
+}
+.notam-overview > div {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.notam-overview strong {
+  font-size: 1.8rem;
+  font-weight: 650;
+}
+.notam-overview span {
+  font-size: 0.84rem;
+  color: #374151;
+}
+.notam-overview svg {
+  width: 21px;
+  height: 21px;
+  color: #1e40af;
+}
+.notam-toolbar {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  margin: 26px 0 19px;
+}
+.notam-toolbar .field {
+  margin: 0;
+}
+.notam-search {
+  position: relative;
+}
+.notam-search > svg {
+  position: absolute;
+  left: 15px;
+  top: 16px;
+  width: 18px;
+  height: 18px;
+  color: #4b5563;
+}
+.notam-search input {
+  padding-left: 43px;
+}
+.notice-list {
+  display: grid;
+  gap: 17px;
+}
+.notice-top,
+.notice-identification,
+.notice-bottom,
+.notice-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.notice-top,
+.notice-bottom {
+  justify-content: space-between;
+}
+.notice-identification h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+.notice-airport {
+  color: #1e40af;
+  background: #edf2fc;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-weight: 750;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+.notice-text {
+  font-size: 0.91rem;
+  line-height: 1.85;
+  white-space: pre-wrap;
+  margin: 20px 0;
+  color: #1f2937;
+  overflow-wrap: anywhere;
+}
+.notice-validity {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  color: #4b5563;
+  font-size: 0.82rem;
+  margin-bottom: 18px;
+}
+.notice-validity span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.notice-validity svg {
+  width: 15px;
+  height: 15px;
+}
+.notice-bottom {
+  border-top: 1px solid #dce1e8;
+  padding-top: 13px;
+}
+.notice-actions {
+  gap: 4px;
+}
+.notice-delete {
+  color: #852c1c;
+}
+.tool-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  margin: 18px 0;
+  cursor: pointer;
+  min-height: 44px;
+}
+.tool-checkbox input {
+  width: 20px;
+  height: 20px;
+  min-height: auto;
+  accent-color: #1e40af;
+}
+.modal-intro {
+  font-size: 0.85rem;
+  margin: 0 0 22px;
+}
+.full-width {
+  grid-column: 1 / -1;
+}
+.balance-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(390px, 1.3fr);
+  gap: 24px;
+  align-items: start;
+}
+.loading-instruction {
+  font-size: 0.85rem;
+  margin: 22px 0 19px;
+}
+.loading-fields {
+  display: grid;
+  gap: 17px;
+}
+.loading-fields label {
+  display: flex;
+  justify-content: space-between;
+}
+.loading-fields label span {
+  font-weight: 450;
+}
+.loading-reset {
+  margin: 21px 0 -5px;
+}
+.balance-numbers {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  padding: 7px 0 6px;
+}
+.balance-numbers > div {
+  display: flex;
+  flex-direction: column;
+}
+.balance-numbers span {
+  font-size: 0.82rem;
+  color: #4b5563;
+}
+.balance-numbers strong {
+  font-size: 2rem;
+  letter-spacing: -0.05em;
+  font-weight: 700;
+  line-height: 1.6;
+}
+.balance-numbers small {
+  font-size: 0.9rem;
+  letter-spacing: normal;
+  font-weight: 500;
+  color: #4b5563;
+}
+.balance-numbers p {
+  margin: 0;
+  font-size: 0.82rem;
+}
+.balance-chart {
+  margin: 8px -5px 24px;
+}
+.balance-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.chart-grid-line {
+  stroke: #dce1e8;
+  stroke-width: 1;
+  stroke-dasharray: 4 5;
+}
+.chart-axis {
+  stroke: #5c6677;
+  stroke-width: 1.3;
+}
+.chart-tick {
+  fill: #4b5563;
+  font-size: 11px;
+  font-family: inherit;
+}
+.chart-label {
+  fill: #374151;
+  font-size: 11px;
+  font-family: inherit;
+}
+.cg-envelope {
+  fill: #edf7f0;
+  stroke: #166534;
+  stroke-width: 1.6;
+}
+.chart-point {
+  fill: #1e40af;
+  stroke: #fff;
+  stroke-width: 3;
+}
+.chart-point-alert {
+  fill: #9a3412;
+}
+.chart-crosshair {
+  stroke: #1e40af;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+.balance-chart figcaption {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.82rem;
+  color: #4b5563;
+}
+.envelope-key {
+  width: 11px;
+  height: 11px;
+  background: #edf7f0;
+  border: 1px solid #166534;
+  margin-left: 3px;
+}
+.point-key {
+  width: 8px;
+  height: 8px;
+  background: #1e40af;
+  border-radius: 50%;
+  margin-left: 12px;
+}
+.balance-status {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+.balance-status > svg {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.balance-status p {
+  margin: 3px 0 0;
+}
+.status-pass {
+  background: #edf7f0;
+  color: #14532d;
+  border: 1px solid #bdd9c6;
+}
+.status-review {
+  background: #fff7eb;
+  color: #78350f;
+  border: 1px solid #e8c99f;
+}
+.moments-card {
+  margin-top: 24px;
+}
+.loading-table td:not(:first-child),
+.loading-table thead th:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.loading-table tbody th {
+  font-weight: 500;
+}
+.loading-table tfoot {
+  background: #f3f5f9;
+  font-weight: 700;
+}
+.balance-formula {
+  font-size: 0.86rem;
+  margin: 22px 0 8px;
+  line-height: 1.9;
+}
+.profile-layout {
+  display: grid;
+  grid-template-columns: minmax(340px, 1.55fr) minmax(280px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding-bottom: 26px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid #dce1e8;
+  flex-wrap: wrap;
+}
+.profile-avatar {
+  width: 58px;
+  height: 58px;
+  background: #eaf0fc;
+  color: #1e40af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  border: 1px solid #c9d5ef;
+  border-radius: 50%;
+}
+.profile-identity h2 {
+  font-size: 1.08rem;
+  margin: 0 0 4px;
+}
+.profile-identity p {
+  margin: 0;
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+.profile-identity > .badge {
+  margin-left: auto;
+}
+.profile-aside {
+  display: grid;
+  gap: 22px;
+}
+.profile-aside h2 {
+  font-size: 1.04rem;
+  margin: 17px 0 10px;
+}
+.profile-aside p {
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+.profile-aside .field-help {
+  font-size: 0.82rem;
+}
+.export-button {
+  width: 100%;
+  margin-top: 9px;
+  justify-content: center;
+}
+.workspace-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 35px;
+  margin-top: 24px;
+}
+.workspace-details h2 {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+.workspace-details p {
+  font-size: 0.85rem;
+  max-width: 370px;
+}
+.workspace-details .eyebrow {
+  font-size: 0.82rem;
+}
+.workspace-details dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 24px;
+  margin: 0;
+}
+.workspace-details dt {
+  color: #4b5563;
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+}
+.workspace-details dd {
+  color: #1f2937;
+  font-size: 0.83rem;
+  margin: 0;
+  line-height: 1.7;
+}
+@media (max-width: 1100px) {
+  .briefing-search-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .briefing-load {
+    margin-top: 0;
+    justify-self: start;
+  }
+  .weather-station-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  .profile-aside {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .balance-layout {
+    grid-template-columns: 1fr 1.2fr;
+    gap: 17px;
+  }
+}
+@media (max-width: 760px) {
+  .balance-layout,
+  .workspace-details {
+    grid-template-columns: 1fr;
+  }
+  .notam-overview {
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+  .notam-overview > div:last-child {
+    flex-basis: 100%;
+  }
+  .notam-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+  .notam-search {
+    grid-column: 1 / -1;
+  }
+  .notam-toolbar .button {
+    justify-content: center;
+  }
+  .notice-bottom {
+    align-items: flex-start;
+  }
+  .notice-actions {
+    width: 100%;
+  }
+  .profile-aside {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .briefing-search-grid,
+  .workspace-details dl {
+    grid-template-columns: 1fr;
+  }
+  .briefing-load {
+    justify-self: stretch;
+    justify-content: center;
+  }
+  .weather-readings {
+    gap: 6px;
+  }
+  .weather-readings strong {
+    font-size: 0.82rem;
+  }
+  .weather-readings span {
+    font-size: 0.82rem;
+  }
+  .balance-numbers strong {
+    font-size: 1.7rem;
+  }
+  .notice-validity {
+    gap: 8px;
+  }
+  .profile-identity > .badge {
+    margin-left: 73px;
+  }
+}
+@media print {
+  .balance-advisory {
+    font-size: 10pt;
+  }
+  .balance-layout {
+    grid-template-columns: 0.8fr 1.2fr;
+  }
+  .loading-reset,
+  .page-heading > button {
+    display: none;
+  }
+  .balance-chart {
+    max-width: 330px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .moments-card {
+    break-inside: avoid;
+  }
+  .balance-result {
+    break-inside: avoid;
+  }
+}
