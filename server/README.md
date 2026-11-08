@@ -11,7 +11,3 @@ Weather uses the free [Aviation Weather Center API](https://aviationweather.gov/
 Live NOTAM retrieval is **unsupported in this version**. `POST /api/notams/refresh` returns HTTP 503 with an explanatory message. There are no NOTAM provider environment settings that enable it. Manual NOTAM entry, date/source recording, review status and filtering in the client are supported. Obtain real notices through an official briefing service and record their source.
 
 The [ICAO API service](https://dataservices.icao.int/) requires an account and API key. Its current public landing page does not expose a verifiable real-time NOTAM endpoint and response contract, so this project does not guess a URL or claim an integration works.
-
-## Regression checks
-
-From the project root, run `npm test` with MongoDB and the API already running. The native Node test runner uses `http://127.0.0.1:5001/api` by default. Set `API_URL` to a different local API base address and `MONGODB_URI` to its test database if needed. The API tests create uniquely named disposable accounts and remove only their own accounts, records and sessions afterward. Use a development database for testing.

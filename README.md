@@ -50,14 +50,12 @@ When the local Node server is running, the built app itself can also load withou
 
 Uses semantic landmarks, a skip link, labeled forms, native modal dialogs, keyboard navigation, visible two-tone 4px focus rings, high-contrast dark text, 44px controls, responsive layouts, and reduced-motion support. Black/white are the base colors, with `#1E40AF` and `#166534` accents. Weather, loading results, and notice status include text rather than relying only on color. This is not a formal WCAG certification.
 
-## Build and check
+## Build
 
 ```bash
 npm run build
-npm test
 ```
 
-`npm test` expects MongoDB and the API to be running. It runs six API regression tests with temporary accounts, covering sessions, required sign-in, rejected legacy demo sessions, validation, ownership, CRUD, logbook links, and origin checks, plus three weather-response unit tests. The tests remove their own data afterward. They do not call external weather services.
 
 To serve the built React application from Express:
 
@@ -85,11 +83,9 @@ server/
   routes/        Express API routes
   app.js         Express middleware and static React serving
   index.js       MongoDB connection and server startup
-tests/           Node API regression checks
-docs/            Course-concept map
 ```
 
-See [the course-concept map](docs/COURSE_CONCEPTS.md) for where the supplied slide concepts appear. `bcryptjs` adds password hashing and `connect-mongo` persists the taught Express sessions. Calculations use ordinary JavaScript arithmetic.
+`bcryptjs` adds password hashing and `connect-mongo` persists the taught Express sessions. Calculations use ordinary JavaScript arithmetic.
 
 The calculator uses a simplified constant CG range and avgas at 6 lb/US gal; it does not replace an approved POH envelope. Route art is a schematic. This student project is not approved for operational flight planning or navigation.
 

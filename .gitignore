@@ -7,3 +7,7 @@ client/dist/
 .DS_Store
 coverage/
 .tmp/
+
+# Keep local tests and course notes out of the repository
+/tests/
+/docs/
