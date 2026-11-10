@@ -4,7 +4,6 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const mongoose = require("mongoose");
 const path = require("node:path");
-const fs = require("node:fs");
 
 require("dotenv").config({ path: path.join(__dirname, ".env"), quiet: true });
 
@@ -15,14 +14,9 @@ if (process.env.NODE_ENV === "production" && !process.env.SESSION_SECRET) {
 const app = express();
 const mongoUrl = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aeroefb";
 const origins = new Set([
-  process.env.CLIENT_URL || "http://localhost:5173",
-  "http://localhost:5001",
-  "http://localhost:5173",
-  "http://127.0.0.1:5001",
-  "http://127.0.0.1:5173",
+  process.env.CLIENT_URL || "http://localhost:5173"
 ]);
 
-app.disable("x-powered-by");
 if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
 app.use(
   cors({
@@ -32,26 +26,13 @@ app.use(
     credentials: true,
   }),
 );
-app.use((req, res, next) => {
-  res.set("X-Content-Type-Options", "nosniff");
-  if (
-    !["GET", "HEAD", "OPTIONS"].includes(req.method) &&
-    req.get("Origin") &&
-    !origins.has(req.get("Origin"))
-  ) {
-    return res
-      .status(403)
-      .json({ message: "This request origin is not allowed." });
-  }
-  next();
-});
 app.use(express.json({ limit: "100kb" }));
 app.use(
   session({
     name: "aeroefb.sid",
     secret:
       process.env.SESSION_SECRET ||
-      "aeroefb-local-development-secret-change-before-deploying",
+      "secret-value",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl, collectionName: "sessions" }),
@@ -73,19 +54,11 @@ app.get("/api/health", (req, res) => {
       database: connected ? "connected" : "disconnected",
     });
 });
+
 app.use("/api", require("./routes/api"));
 app.use("/api", (req, res) =>
   res.status(404).json({ message: "API endpoint not found." }),
 );
-
-// The same Express server can serve the built React app for a simple deployment.
-const clientBuild = path.join(__dirname, "../client/dist");
-if (fs.existsSync(clientBuild)) {
-  app.use(express.static(clientBuild));
-  app.get("/{*path}", (req, res) =>
-    res.sendFile(path.join(clientBuild, "index.html")),
-  );
-}
 
 app.use((error, req, res, next) => {
   if (error.code === 11000) {

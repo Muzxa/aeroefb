@@ -15,7 +15,7 @@ function cleanBody(body, fields, numberFields = []) {
     if (numberFields.includes(field)) {
       if (
         (typeof value !== "number" && typeof value !== "string") ||
-        value === "" ||
+        (typeof value === "string" && !value.trim()) ||
         !Number.isFinite(Number(value))
       ) {
         throw badRequest(`${field} must be a number.`);
