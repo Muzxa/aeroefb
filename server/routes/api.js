@@ -1,5 +1,4 @@
 const express = require("express");
-const requireAuth = require("../middleware/auth");
 const auth = require("../controllers/authController");
 const aircraft = require("../controllers/aircraftController");
 const flights = require("../controllers/flightController");
@@ -34,10 +33,10 @@ function authLimit(req, res, next) {
 router.post("/auth/register", authLimit, auth.register);
 router.post("/auth/login", authLimit, auth.login);
 router.post("/auth/logout", auth.logout);
-router.get("/auth/me", requireAuth, auth.me);
-router.put("/auth/profile", requireAuth, auth.profile);
 
-router.use(requireAuth);
+router.use(auth.requireAuth);
+router.get("/auth/me", auth.me);
+router.put("/auth/profile", auth.profile);
 router.get("/aircraft", aircraft.list);
 router.post("/aircraft", aircraft.create);
 router.put("/aircraft/:id", aircraft.update);

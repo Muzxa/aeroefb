@@ -25,6 +25,28 @@ function signIn(req, userId) {
   });
 }
 
+async function endSession(req, res) {
+  await new Promise((resolve, reject) => {
+    req.session.destroy((error) => error ? reject(error) : resolve());
+  });
+  res.clearCookie("aeroefb.sid", {
+    path: "/",
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+}
+
+exports.requireAuth = async (req, res, next) => {
+  const id = req.session.userId;
+  const user = id && await User.findById(id);
+  if (!user || user.isDemo) {
+    if (id) await endSession(req, res);
+    return res.status(401).json({ message: "Please sign in to continue." });
+  }
+  req.user = user;
+  next();
+};
+
 exports.me = (req, res) => res.json(publicUser(req.user));
 
 exports.register = async (req, res) => {
@@ -66,16 +88,9 @@ exports.login = async (req, res) => {
   res.json(publicUser(user));
 };
 
-exports.logout = (req, res, next) => {
-  req.session.destroy((error) => {
-    if (error) return next(error);
-    res.clearCookie("aeroefb.sid", {
-      path: "/",
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-    });
-    res.json({ message: "Signed out." });
-  });
+exports.logout = async (req, res) => {
+  await endSession(req, res);
+  res.json({ message: "Signed out." });
 };
 
 exports.profile = async (req, res) => {
