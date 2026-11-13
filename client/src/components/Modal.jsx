@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import Icon from "./Icon";
+import { XIcon } from "@phosphor-icons/react";
 
 export default function Modal({ title, onClose, children }) {
   const dialog = useRef(null);
@@ -29,7 +29,7 @@ export default function Modal({ title, onClose, children }) {
           aria-label="Close dialog"
           onClick={onClose}
         >
-          <Icon name="close" />
+          <XIcon />
         </button>
       </div>
       <div className="modal-body">{children}</div>

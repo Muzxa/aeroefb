@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { api } from "../api";
-import Icon from "./Icon";
+import { AirplaneTiltIcon, ArrowRightIcon } from "@phosphor-icons/react";
 
 export default function Auth({ onSuccess }) {
   const [mode, setMode] = useState("login");
@@ -23,10 +23,9 @@ export default function Auth({ onSuccess }) {
   return (
     <div className="auth-content">
       <div className="auth-symbol">
-        <Icon name="plane" size={32} />
+        <AirplaneTiltIcon size={32} />
       </div>
-      <p className="eyebrow">YOUR PERSONAL FLIGHT DECK</p>
-      <h1>{mode === "login" ? "Welcome aboard." : "Start your journey."}</h1>
+      <h1>{mode === "login" ? "Sign in" : "Create account"}</h1>
       <div className="auth-tabs">
         <button
           type="button"
@@ -98,7 +97,7 @@ export default function Auth({ onSuccess }) {
             : mode === "login"
               ? "Sign in"
               : "Create account"}
-          <Icon name="arrow" size={18} />
+          <ArrowRightIcon size={18} />
         </button>
       </form>
     </div>

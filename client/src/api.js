@@ -1,4 +1,4 @@
-import { store, setUser } from "./store/store";
+import { store, setUser } from "./store/store.js";
 
 let userId = "guest";
 
@@ -6,16 +6,29 @@ export function setCacheUser(id) {
   userId = id || "guest";
 }
 
-// Only record lists and briefings are cached. Passwords and session cookies never are.
+function savedResponse(key, weatherWarning) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(key));
+    if (saved)
+      return weatherWarning
+        ? { ...saved.data, cached: true, errors: [...(saved.data.errors || []), weatherWarning] }
+        : saved.data;
+  } catch {
+    // Storage can be disabled or contain an unreadable entry.
+  }
+}
+
 export async function api(path, options = {}) {
   const method = options.method || "GET";
   const cacheable = method === "GET" && !path.startsWith("/auth");
+  const weather = cacheable && path.startsWith("/weather?");
   const key = `aeroefb:${userId}:${path}`;
-  let response;
   if (!navigator.onLine && method !== "GET")
     throw new Error(
       "You are offline. Saved information is available to read; reconnect to make changes.",
     );
+
+  let response;
   try {
     response = await fetch(`/api${path}`, {
       ...options,
@@ -24,62 +37,35 @@ export async function api(path, options = {}) {
       headers: { "Content-Type": "application/json", ...options.headers },
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
-  } catch {
+  } catch (error) {
+    if (options.signal?.aborted) throw error;
     if (cacheable) {
-      try {
-        const saved = JSON.parse(localStorage.getItem(key));
-        if (saved)
-          return path.startsWith("/weather")
-            ? {
-                ...saved.data,
-                cached: true,
-                errors: [
-                  "Connection unavailable. This is the last saved briefing.",
-                ],
-              }
-            : saved.data;
-      } catch {
-        /* Reading remains available when browser storage is disabled. */
-      }
+      const saved = savedResponse(key, weather && "Connection unavailable. This is the last saved briefing.");
+      if (saved !== undefined) return saved;
     }
     throw new Error(
       "Cannot reach the server. Start the server or reconnect, then try again.",
     );
   }
-  const data = response.status === 204 ? null : await response.json();
+
   if (!response.ok) {
     if (response.status === 401) {
-      userId = "guest";
+      setCacheUser(null);
       store.dispatch(setUser(null));
     }
-    // A provider outage may use the last briefing, but authentication errors never use cached data.
-    if (cacheable && path.startsWith("/weather") && response.status >= 500) {
-      try {
-        const saved = JSON.parse(localStorage.getItem(key));
-        if (saved)
-          return {
-            ...saved.data,
-            cached: true,
-            errors: [
-              "Live weather is unavailable. This is the last saved briefing.",
-            ],
-          };
-      } catch {
-        /* No saved briefing. */
-      }
+    if (weather && response.status >= 500) {
+      const saved = savedResponse(key, "Live weather is unavailable. This is the last saved briefing.");
+      if (saved !== undefined) return saved;
     }
-    const error = new Error(
-      data?.message || "The request could not be completed.",
-    );
+    const data = await response.json().catch(() => null);
+    const error = new Error(data?.message || `The request failed (HTTP ${response.status}).`);
     error.status = response.status;
     throw error;
   }
+  const data = response.status === 204 ? null : await response.json();
   if (cacheable) {
     try {
-      localStorage.setItem(
-        key,
-        JSON.stringify({ data, savedAt: new Date().toISOString() }),
-      );
+      localStorage.setItem(key, JSON.stringify({ data }));
     } catch {
       /* A full cache does not stop normal use. */
     }
