@@ -1,11 +1,32 @@
 import { useEffect, useState } from "react";
-import Icon from "../components/Icon";
-import Modal from "../components/Modal";
+import {
+  ArrowClockwiseIcon,
+  CheckIcon,
+  ClockIcon,
+  CloudIcon,
+  CompassIcon,
+  InfoIcon,
+  MagnifyingGlassIcon,
+  SunIcon,
+  WindIcon,
+} from "@phosphor-icons/react";
 import { api } from "../api";
 import "./tools.css";
 
-function getAirports(flight) {
+function getAirports(flight, airportsOnly = false) {
   if (!flight) return [];
+  if (flight.importedRoute || airportsOnly) {
+    const airports = (flight.importedRoute?.waypoints || [])
+      .filter(({ type }) => type === "AIRPORT")
+      .map(({ id }) => id);
+    return [
+      ...new Set(
+        [flight.departure, flight.destination, flight.alternate, ...airports].filter(
+          (id) => /^[A-Z]{4}$/.test(id),
+        ),
+      ),
+    ];
+  }
   const values = `${flight.departure || ""} ${flight.destination || ""} ${flight.alternate || ""} ${flight.route || ""}`;
   return [...new Set(values.toUpperCase().match(/\b[A-Z]{4}\b/g) || [])];
 }
@@ -26,62 +47,45 @@ function dateLabel(value) {
       })} UTC`;
 }
 
-function utcInputDate(value) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 16);
-}
-
 function stationOf(report) {
   return (
     report.icaoId || report.airport || report.stationId || report.station || ""
   );
 }
 
-const blankNotice = {
-  airport: "",
-  reference: "",
-  text: "",
-  startsAt: "",
-  endsAt: "",
-  category: "Aerodrome",
-  source: "Manual import",
-  reviewed: false,
-};
-
 export default function Briefing({
   mode = "weather",
   user,
   flights = [],
-  notams = [],
-  refresh,
   notify,
   online = true,
 }) {
-  const [airportInput, setAirportInput] = useState(
-    mode === "weather" ? user?.homeAirport || "" : "",
-  );
+  const [airportInput, setAirportInput] = useState(user?.homeAirport || "");
   const [flightId, setFlightId] = useState("");
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [weatherError, setWeatherError] = useState("");
+  const [notamLookup, setNotamLookup] = useState(null);
+  const [notamBriefing, setNotamBriefing] = useState(null);
+  const [notamLoading, setNotamLoading] = useState(false);
+  const [notamError, setNotamError] = useState("");
+  const [reviewingLive, setReviewingLive] = useState(false);
   const [search, setSearch] = useState("");
   const [reviewFilter, setReviewFilter] = useState("all");
-  const [editor, setEditor] = useState("");
-  const [notice, setNotice] = useState(blankNotice);
-  const [editingId, setEditingId] = useState("");
-  const [deleting, setDeleting] = useState(null);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState("");
-
   useEffect(() => {
     const homeAirport = user?.homeAirport || "";
-    setAirportInput(mode === "weather" ? homeAirport : "");
+    setAirportInput(homeAirport);
     setFlightId("");
     setWeather(null);
     setWeatherError("");
     setLoading(false);
+    setNotamBriefing(null);
+    setNotamError("");
+    setNotamLookup(
+      mode === "notams" && /^[A-Z]{4}$/.test(homeAirport)
+        ? { airports: [homeAirport] }
+        : null,
+    );
     if (mode !== "weather" || !/^[A-Z]{4}$/.test(homeAirport)) return;
 
     let active = true;
@@ -101,6 +105,34 @@ export default function Briefing({
     };
   }, [mode, user?._id, user?.homeAirport]);
 
+  useEffect(() => {
+    if (mode !== "notams" || !notamLookup || !online) {
+      setNotamLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    setNotamLoading(true);
+    setNotamBriefing(null);
+    setNotamError("");
+    api("/notams/refresh", {
+      method: "POST",
+      body: notamLookup,
+      signal: controller.signal,
+    })
+      .then((data) => {
+        if (!controller.signal.aborted)
+          setNotamBriefing({ ...data, airports: notamLookup.airports });
+      })
+      .catch((error) => {
+        if (!controller.signal.aborted) setNotamError(error.message);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setNotamLoading(false);
+      });
+    return () => controller.abort();
+  }, [mode, notamLookup, online]);
+
   const airports = [
     ...new Set(
       airportInput
@@ -114,22 +146,26 @@ export default function Briefing({
     weather &&
     Number.isFinite(briefingTime) &&
     Date.now() - briefingTime > 60 * 60 * 1000;
-  const visibleNotams = notams.filter((item) => {
-    const matchesAirport =
-      airports.length === 0 || airports.includes(item.airport);
-    const matchesReview =
-      reviewFilter === "all" ||
-      (reviewFilter === "reviewed" ? item.reviewed : !item.reviewed);
-    const matchesSearch = `${item.airport} ${item.reference} ${item.text}`
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    return matchesAirport && matchesReview && matchesSearch;
-  });
+  const visibleNotams = (notamBriefing?.notices || []).filter(
+    (item) => {
+      const matchesReview =
+        reviewFilter === "all" ||
+        (reviewFilter === "reviewed" ? item.reviewed : !item.reviewed);
+      const matchesSearch = `${item.airport} ${item.reference} ${item.text}`
+        .toLowerCase()
+        .includes(search.toLowerCase());
+      return matchesReview && matchesSearch;
+    },
+  );
+  const hasNotices = Boolean(notamBriefing?.notices.length);
+  const briefingLoading = mode === "weather" ? loading : notamLoading;
 
   function selectFlight(value) {
     setFlightId(value);
     const flight = flights.find((item) => item._id === value);
-    setAirportInput(getAirports(flight).join(", "));
+    const codes = getAirports(flight, mode === "notams");
+    setAirportInput(codes.join(", "));
+    if (mode === "notams") lookupNotams(codes, Boolean(flight));
   }
 
   async function loadWeather(event) {
@@ -158,173 +194,77 @@ export default function Briefing({
     }
   }
 
-  function openEditor(item, title) {
-    setEditingId(item?._id || "");
-    setNotice(
-      item
-        ? {
-            ...item,
-            startsAt: utcInputDate(item.startsAt),
-            endsAt: utcInputDate(item.endsAt),
-          }
-        : {
-            ...blankNotice,
-            airport: airports.length === 1 ? airports[0] : "",
-          },
-    );
-    setFormError("");
-    setEditor(title);
-  }
-
-  function changeNotice(event) {
-    const { name, value, type, checked } = event.target;
-    setNotice({ ...notice, [name]: type === "checkbox" ? checked : value });
-  }
-
-  async function saveNotice(event) {
-    event.preventDefault();
-    if (
-      notice.startsAt &&
-      notice.endsAt &&
-      new Date(`${notice.endsAt}Z`) <= new Date(`${notice.startsAt}Z`)
-    ) {
-      setFormError("The end time must be after the start time.");
-      return;
-    }
-    setSaving(true);
-    setFormError("");
-    try {
-      const body = {
-        ...notice,
-        airport: notice.airport.trim().toUpperCase(),
-        startsAt: notice.startsAt
-          ? new Date(`${notice.startsAt}Z`).toISOString()
-          : null,
-        endsAt: notice.endsAt
-          ? new Date(`${notice.endsAt}Z`).toISOString()
-          : null,
-      };
-      await api(editingId ? `/notams/${editingId}` : "/notams", {
-        method: editingId ? "PUT" : "POST",
-        body,
-      });
-      setEditor("");
-      notify(editingId ? "Notice updated." : "Notice saved to your briefing.");
-      try {
-        await refresh();
-      } catch (error) {
-        notify(
-          `The notice was saved, but the list could not be refreshed. ${error.message}`,
-          "error",
-        );
-      }
-    } catch (error) {
-      setFormError(error.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function toggleReviewed(item) {
+    setReviewingLive(true);
     try {
-      await api(`/notams/${item._id}`, {
+      const reviewed = !item.reviewed;
+      await api(`/notams/live/${item._id}/review`, {
         method: "PUT",
-        body: { reviewed: !item.reviewed },
+        body: { reviewed },
       });
-      await refresh();
-      notify(
-        item.reviewed
-          ? "Notice marked as unread."
-          : "Notice marked as reviewed.",
+      setNotamBriefing((current) =>
+        current && {
+          ...current,
+          notices: current.notices.map((notice) =>
+            notice._id === item._id ? { ...notice, reviewed } : notice,
+          ),
+        },
       );
     } catch (error) {
       notify(error.message, "error");
+    } finally {
+      setReviewingLive(false);
     }
   }
 
-  async function deleteNotice() {
-    setSaving(true);
-    try {
-      await api(`/notams/${deleting._id}`, { method: "DELETE" });
-      setDeleting(null);
-      notify("Notice removed.");
-      try {
-        await refresh();
-      } catch (error) {
-        notify(
-          `The notice was removed, but the list could not be refreshed. ${error.message}`,
-          "error",
-        );
-      }
-    } catch (error) {
-      setFormError(error.message);
-    } finally {
-      setSaving(false);
+  function lookupNotams(codes, shouldFetch) {
+    setNotamBriefing(null);
+    setNotamError("");
+    if (!shouldFetch) {
+      setNotamLookup(null);
+    } else if (
+      !codes.length ||
+      codes.length > 8 ||
+      codes.some((code) => !/^[A-Z]{4}$/.test(code))
+    ) {
+      setNotamLookup(null);
+      setNotamError("Enter one to eight four-letter ICAO airport codes.");
+    } else {
+      setNotamLookup({ airports: codes });
     }
   }
 
-  async function refreshNotams() {
-    setLoading(true);
-    try {
-      const result = await api("/notams/refresh", {
-        method: "POST",
-        body: { airports },
-      });
-      notify(
-        result.message || "NOTAM refresh completed.",
-        result.configured === false ? "info" : "success",
-      );
-      await refresh();
-    } catch (error) {
-      notify(error.message, error.status === 503 ? "info" : "error");
-    } finally {
-      setLoading(false);
-    }
+  function refreshNotams(event) {
+    event.preventDefault();
+    if (online && !notamLoading && !reviewingLive) lookupNotams(airports, true);
   }
 
   return (
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">FLIGHT PREPARATION</p>
           <h1>{mode === "weather" ? "Weather briefing" : "NOTAM briefing"}</h1>
-          <p className="page-intro">
-            {mode === "weather"
-              ? "A clear picture of conditions along your route."
-              : "Keep the operational details that matter in one place."}
-          </p>
         </div>
-        {mode === "notams" && (
-          <button
-            className="button"
-            onClick={() => openEditor(null, "Add a notice")}
-            disabled={!online}
-          >
-            <Icon name="plus" /> Add notice
-          </button>
-        )}
       </div>
 
       <section
         className="card briefing-controls"
         aria-label="Briefing airports"
       >
-        <div className="section-heading">
-          <h2>Build your briefing</h2>
-          <span className="badge blue">ICAO airport codes</span>
-        </div>
-        <form
-          onSubmit={
-            mode === "weather" ? loadWeather : (event) => event.preventDefault()
-          }
-        >
-          <div className="form-grid briefing-search-grid">
+        {mode === "notams" && (
+          <div className="section-heading">
+            <h2>Build your briefing</h2>
+          </div>
+        )}
+        <form onSubmit={mode === "weather" ? loadWeather : refreshNotams}>
+          <div className={`form-grid briefing-search-grid ${mode === "notams" ? "notam-briefing-grid" : ""}`}>
             <div className="field">
               <label htmlFor={`${mode}-flight`}>Use a saved flight</label>
               <select
                 id={`${mode}-flight`}
                 value={flightId}
                 onChange={(event) => selectFlight(event.target.value)}
+                disabled={mode === "notams" && reviewingLive}
               >
                 <option value="">Choose a flight</option>
                 {flights.map((flight) => (
@@ -338,50 +278,36 @@ export default function Briefing({
               </select>
             </div>
             <div className="field">
-              <label htmlFor={`${mode}-airports`}>Airports</label>
+              <label htmlFor={`${mode}-airports`}>Airports (ICAO codes)</label>
               <input
                 id={`${mode}-airports`}
                 value={airportInput}
                 onChange={(event) => {
                   setAirportInput(event.target.value.toUpperCase());
                   setFlightId("");
+                  if (mode === "notams") lookupNotams([], false);
                 }}
                 placeholder="e.g. OPLA, OPIS"
-                aria-describedby={`${mode}-airport-help`}
+                disabled={mode === "notams" && reviewingLive}
               />
             </div>
             <button
-              className="button secondary briefing-load"
-              type={mode === "weather" ? "submit" : "button"}
-              onClick={mode === "notams" ? refreshNotams : undefined}
-              disabled={loading || (mode === "notams" && !online)}
+              className={mode === "notams" ? "button notam-fetch" : "button secondary briefing-load"}
+              type="submit"
+              disabled={
+                briefingLoading || (mode === "notams" && (reviewingLive || !online))
+              }
             >
-              <Icon name="refresh" />{" "}
-              {loading
+              <ArrowClockwiseIcon />{" "}
+              {briefingLoading
                 ? "Loading…"
                 : mode === "weather"
                   ? "Get weather"
-                  : "Live feed status"}
+                  : "Get active NOTAMs"}
             </button>
           </div>
-          <p className="muted field-help" id={`${mode}-airport-help`}>
-            {mode === "weather"
-              ? "Enter four-letter airport codes. METAR observations and TAF forecasts are requested from NOAA Aviation Weather Center."
-              : "A saved flight includes departure, destination, alternate and four-letter airport codes in its route. Leave blank to show every saved notice."}
-          </p>
         </form>
       </section>
-
-      {!online && (
-        <div className="briefing-advisory" role="status">
-          <Icon name="info" />
-          <p>
-            You are offline. Previously loaded information may be available from
-            your browser cache. Check the saved time; conditions and notices can
-            change.
-          </p>
-        </div>
-      )}
 
       {mode === "weather" ? (
         <>
@@ -394,16 +320,6 @@ export default function Briefing({
             <p className="muted" role="status">
               Requesting aviation weather…
             </p>
-          )}
-          {!weather && !loading && (
-            <section className="card empty-state briefing-empty">
-              <Icon name="cloud" />
-              <h2>Your weather, all together</h2>
-              <p>
-                Select a saved flight or enter airport codes to retrieve current
-                METAR reports and available TAF forecasts.
-              </p>
-            </section>
           )}
           {weather && (
             <>
@@ -426,7 +342,7 @@ export default function Briefing({
               </div>
               {oldBriefing && (
                 <div className="briefing-advisory" role="status">
-                  <Icon name="clock" />
+                  <ClockIcon />
                   <p>
                     This briefing was saved over an hour ago. Request an updated
                     briefing and check each report’s observation time before
@@ -436,7 +352,7 @@ export default function Briefing({
               )}
               {weather.errors?.length > 0 && (
                 <div className="briefing-advisory" role="status">
-                  <Icon name="info" />
+                  <InfoIcon />
                   <div>
                     {weather.errors.map((error, index) => (
                       <p key={index}>
@@ -470,7 +386,7 @@ export default function Briefing({
                         <div className="section-heading">
                           <div className="station-title">
                             <span className="station-icon">
-                              <Icon name="cloud" />
+                              <CloudIcon />
                             </span>
                             <h2>{airport}</h2>
                           </div>
@@ -494,7 +410,7 @@ export default function Briefing({
                             </p>
                             <div className="weather-readings">
                               <div>
-                                <Icon name="wind" />
+                                <WindIcon />
                                 <span>Wind</span>
                                 <strong>
                                   {metar.wdir === "VRB"
@@ -509,7 +425,7 @@ export default function Briefing({
                                 </strong>
                               </div>
                               <div>
-                                <Icon name="sun" />
+                                <SunIcon />
                                 <span>Temperature</span>
                                 <strong>
                                   {metar.temp != null
@@ -518,7 +434,7 @@ export default function Briefing({
                                 </strong>
                               </div>
                               <div>
-                                <Icon name="compass" />
+                                <CompassIcon />
                                 <span>Visibility</span>
                                 <strong>
                                   {metar.visib != null
@@ -577,72 +493,54 @@ export default function Briefing({
         </>
       ) : (
         <>
-          <div className="notam-overview">
-            <div>
-              <strong>{visibleNotams.length}</strong>
-              <span>notices in this briefing</span>
+          {online && !notamLookup && !notamError && !notamLoading && (
+            <p className="muted">Enter an airport code to look up notices.</p>
+          )}
+          {notamError && (
+            <div className="tool-error" role="alert">
+              {notamError}
             </div>
-            <div>
-              <strong>
-                {visibleNotams.filter((item) => !item.reviewed).length}
-              </strong>
-              <span>to review</span>
-            </div>
-            <div>
-              <Icon name="notam" />
-              <span>Review source and validity before use</span>
-            </div>
-          </div>
-          <div className="briefing-advisory">
-            <Icon name="info" />
-            <p>
-              Live retrieval is not integrated in this version. Import notices
-              from an official briefing service, such as{" "}
-              <a
-                href="https://notams.aim.faa.gov/notamSearch/"
-                target="_blank"
-                rel="noreferrer"
-              >
-                FAA NOTAM Search <span className="sr-only">in a new tab</span>
-              </a>{" "}
-              or your local AIS. Training examples are clearly marked.
+          )}
+          {notamLoading && (
+            <p className="muted" role="status">
+              Requesting active NOTAMs…
             </p>
-          </div>
-          <div className="notam-toolbar">
-            <div className="field notam-search">
-              <label className="sr-only" htmlFor="notice-search">
-                Search saved notices
-              </label>
-              <Icon name="search" />
-              <input
-                id="notice-search"
-                placeholder="Search reference or notice text"
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-              />
+          )}
+          {notamBriefing && !hasNotices && (
+            <p className="muted" role="status">
+              No active notices for {notamBriefing.airports.join(", ")}
+            </p>
+          )}
+          {hasNotices && (
+            <div className="notam-toolbar">
+              <div className="field notam-search">
+                <label className="sr-only" htmlFor="notice-search">
+                  Search notices
+                </label>
+                <MagnifyingGlassIcon />
+                <input
+                  id="notice-search"
+                  placeholder="Search reference or notice text"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+              </div>
+              <div className="field">
+                <label className="sr-only" htmlFor="notice-status">
+                  Review status
+                </label>
+                <select
+                  id="notice-status"
+                  value={reviewFilter}
+                  onChange={(event) => setReviewFilter(event.target.value)}
+                >
+                  <option value="all">All review statuses</option>
+                  <option value="unread">To review</option>
+                  <option value="reviewed">Reviewed</option>
+                </select>
+              </div>
             </div>
-            <div className="field">
-              <label className="sr-only" htmlFor="notice-status">
-                Review status
-              </label>
-              <select
-                id="notice-status"
-                value={reviewFilter}
-                onChange={(event) => setReviewFilter(event.target.value)}
-              >
-                <option value="all">All review statuses</option>
-                <option value="unread">To review</option>
-                <option value="reviewed">Reviewed</option>
-              </select>
-            </div>
-            <button
-              className="button secondary"
-              onClick={() => openEditor(null, "Import an official notice")}
-              disabled={!online}
-            >
-              <Icon name="download" /> Import notice
-            </button>
-          </div>
+          )}
           <div className="notice-list">
             {visibleNotams.map((item) => (
               <article key={item._id} className="card notice-card">
@@ -651,7 +549,7 @@ export default function Briefing({
                     <span className="notice-airport">{item.airport}</span>
                     <h2>{item.reference}</h2>
                     <span className="badge">{item.category || "General"}</span>
-                    {new Date(item.endsAt).getTime() < Date.now() && (
+                    {item.endsAt && new Date(item.endsAt).getTime() < Date.now() && (
                       <span className="badge amber">Expired</span>
                     )}
                     {new Date(item.startsAt).getTime() > Date.now() && (
@@ -667,225 +565,40 @@ export default function Briefing({
                 <p className="notice-text">{item.text}</p>
                 <div className="notice-validity">
                   <span>
-                    <Icon name="clock" /> From {dateLabel(item.startsAt)}
+                    <ClockIcon /> From {dateLabel(item.startsAt)}
                   </span>
-                  <span>Until {dateLabel(item.endsAt)}</span>
+                  <span>
+                    {item.endsAt
+                      ? `Until ${dateLabel(item.endsAt)}`
+                      : "No end time supplied"}
+                  </span>
                 </div>
                 <div className="notice-bottom">
                   <span
-                    className={`badge ${item.source === "Training example" ? "amber" : "blue"}`}
+                    className="badge blue"
                   >
-                    {item.source || "Manual import"}
+                    {item.source}
                   </span>
                   <div className="notice-actions">
                     <button
                       className="button ghost"
                       onClick={() => toggleReviewed(item)}
-                      disabled={!online}
+                      disabled={!online || reviewingLive}
                     >
-                      <Icon name="check" />{" "}
+                      <CheckIcon />{" "}
                       {item.reviewed ? "Mark unread" : "Mark reviewed"}
-                    </button>
-                    <button
-                      className="button ghost"
-                      onClick={() => openEditor(item, "Edit notice")}
-                      disabled={!online}
-                      aria-label={`Edit ${item.reference}`}
-                    >
-                      <Icon name="edit" /> Edit
-                    </button>
-                    <button
-                      className="button ghost notice-delete"
-                      onClick={() => {
-                        setFormError("");
-                        setDeleting(item);
-                      }}
-                      disabled={!online}
-                      aria-label={`Delete ${item.reference}`}
-                    >
-                      <Icon name="trash" />
                     </button>
                   </div>
                 </div>
               </article>
             ))}
-            {visibleNotams.length === 0 && (
-              <section className="card empty-state briefing-empty">
-                <Icon name="notam" />
-                <h2>No matching notices</h2>
-                <p>
-                  Change your filters or import an official notice to start your
-                  briefing.
-                </p>
-              </section>
+            {hasNotices && visibleNotams.length === 0 && (
+              <p className="muted" role="status">No notices match your filters.</p>
             )}
           </div>
         </>
       )}
 
-      {editor && (
-        <Modal title={editor} onClose={() => setEditor("")}>
-          <form onSubmit={saveNotice}>
-            <p className="muted modal-intro">
-              Copy the complete notice from its official source. Times below use
-              UTC.
-            </p>
-            <div className="form-grid">
-              <div className="field">
-                <label htmlFor="notice-airport">Airport ICAO</label>
-                <input
-                  id="notice-airport"
-                  name="airport"
-                  value={notice.airport}
-                  onChange={changeNotice}
-                  required
-                  pattern="[A-Za-z]{4}"
-                  maxLength="4"
-                  placeholder="OPLA"
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="notice-reference">Notice reference</label>
-                <input
-                  id="notice-reference"
-                  name="reference"
-                  value={notice.reference}
-                  onChange={changeNotice}
-                  required
-                  maxLength="60"
-                  placeholder="A0123/26"
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="notice-start">Valid from (UTC)</label>
-                <input
-                  id="notice-start"
-                  type="datetime-local"
-                  name="startsAt"
-                  value={notice.startsAt}
-                  onChange={changeNotice}
-                  required
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="notice-end">Valid until (UTC)</label>
-                <input
-                  id="notice-end"
-                  type="datetime-local"
-                  name="endsAt"
-                  value={notice.endsAt}
-                  onChange={changeNotice}
-                  required
-                />
-              </div>
-              <div className="field">
-                <label htmlFor="notice-category">Category</label>
-                <select
-                  id="notice-category"
-                  name="category"
-                  value={notice.category}
-                  onChange={changeNotice}
-                >
-                  <option>General</option>
-                  <option>Aerodrome</option>
-                  <option>Runway</option>
-                  <option>Airspace</option>
-                  <option>Navigation</option>
-                  <option>Other</option>
-                  {![
-                    "General",
-                    "Aerodrome",
-                    "Runway",
-                    "Airspace",
-                    "Navigation",
-                    "Other",
-                  ].includes(notice.category) && (
-                    <option>{notice.category}</option>
-                  )}
-                </select>
-              </div>
-              <div className="field">
-                <label htmlFor="notice-source">Source</label>
-                <input
-                  id="notice-source"
-                  name="source"
-                  value={notice.source}
-                  onChange={changeNotice}
-                  required
-                  maxLength="160"
-                />
-              </div>
-              <div className="field full-width">
-                <label htmlFor="notice-text">Complete notice text</label>
-                <textarea
-                  id="notice-text"
-                  name="text"
-                  value={notice.text}
-                  onChange={changeNotice}
-                  rows="6"
-                  required
-                  maxLength="8000"
-                  placeholder="Paste the complete NOTAM here…"
-                />
-              </div>
-            </div>
-            <label className="tool-checkbox">
-              <input
-                type="checkbox"
-                name="reviewed"
-                checked={notice.reviewed}
-                onChange={changeNotice}
-              />{" "}
-              I have reviewed this notice
-            </label>
-            {formError && (
-              <p className="tool-error" role="alert">
-                {formError}
-              </p>
-            )}
-            <div className="form-actions">
-              <button
-                type="button"
-                className="button secondary"
-                onClick={() => setEditor("")}
-              >
-                Cancel
-              </button>
-              <button className="button" disabled={saving || !online}>
-                {saving ? "Saving…" : "Save notice"}
-              </button>
-            </div>
-          </form>
-        </Modal>
-      )}
-      {deleting && (
-        <Modal title="Remove this notice?" onClose={() => setDeleting(null)}>
-          <p>
-            This will remove {deleting.reference} at {deleting.airport} from
-            your saved briefing.
-          </p>
-          {formError && (
-            <p className="tool-error" role="alert">
-              {formError}
-            </p>
-          )}
-          <div className="form-actions">
-            <button
-              className="button secondary"
-              onClick={() => setDeleting(null)}
-            >
-              Keep notice
-            </button>
-            <button
-              className="button"
-              onClick={deleteNotice}
-              disabled={saving || !online}
-            >
-              {saving ? "Removing…" : "Remove notice"}
-            </button>
-          </div>
-        </Modal>
-      )}
     </>
   );
 }

@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
     bio: { type: String, trim: true, maxlength: 1000, default: "" },
+    notacReviewed: [String],
     isDemo: { type: Boolean, default: false },
   },
   { timestamps: true },

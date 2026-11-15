@@ -49,11 +49,8 @@ router.get("/logbook", logbook.list);
 router.post("/logbook", logbook.create);
 router.put("/logbook/:id", logbook.update);
 router.delete("/logbook/:id", logbook.remove);
-router.get("/notams", notams.list);
-router.post("/notams", notams.create);
 router.post("/notams/refresh", notams.refresh);
-router.put("/notams/:id", notams.update);
-router.delete("/notams/:id", notams.remove);
+router.put("/notams/live/:id/review", notams.reviewLive);
 router.get("/weather", weather.get);
 
 module.exports = router;

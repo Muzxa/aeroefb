@@ -1,55 +1,55 @@
-const Notam = require("../models/Notam");
-const { cleanBody } = require("../middleware/validation");
+const User = require("../models/User");
+const { badRequest, cleanBody } = require("../middleware/validation");
+const { fetchActiveNotams, NotacError } = require("../services/notac");
 
-const fields = [
-  "airport",
-  "reference",
-  "text",
-  "startsAt",
-  "endsAt",
-  "category",
-  "source",
-  "reviewed",
-];
+exports.refresh = async (req, res) => {
+  const input = req.body?.airports;
+  if (!Array.isArray(input) || input.some((code) => typeof code !== "string"))
+    throw badRequest("Provide an array of airport ICAO codes.");
+  const airports = [...new Set(input.map((code) => code.trim().toUpperCase()))];
+  if (
+    !airports.length ||
+    airports.length > 8 ||
+    airports.some((code) => !/^[A-Z]{4}$/.test(code))
+  ) {
+    throw badRequest("Enter one to eight four-letter ICAO airport codes.");
+  }
 
-exports.list = async (req, res) => {
-  res.json(
-    await Notam.find({ user: req.user._id }).sort({ reviewed: 1, startsAt: 1 }),
+  const apiKey = process.env.NOTAC_API_KEY?.trim();
+  if (!apiKey)
+    return res
+      .status(503)
+      .json({ message: "NOTAC is not configured on the server." });
+
+  let briefing;
+  try {
+    briefing = await fetchActiveNotams(airports, apiKey);
+  } catch (error) {
+    if (!(error instanceof NotacError)) throw error;
+    return res.status(error.status).json({ message: error.message });
+  }
+
+  const reviewed = new Set(req.user.notacReviewed);
+  res.set("Cache-Control", "no-store").json({
+    ...briefing,
+    notices: briefing.notices.map((notice) => ({
+      ...notice,
+      reviewed: reviewed.has(notice._id),
+    })),
+  });
+};
+
+exports.reviewLive = async (req, res) => {
+  const id = req.params.id.toLowerCase();
+  const { reviewed } = cleanBody(req.body, ["reviewed"]);
+  if (!/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/.test(id))
+    throw badRequest("Invalid NOTAC notice ID.");
+  if (reviewed === undefined) throw badRequest("Provide a review status.");
+
+  await User.updateOne(
+    { _id: req.user._id },
+    { [reviewed ? "$addToSet" : "$pull"]: { notacReviewed: id } },
+    { timestamps: false },
   );
-};
-
-exports.create = async (req, res) => {
-  res
-    .status(201)
-    .json(
-      await Notam.create({
-        ...cleanBody(req.body, fields),
-        user: req.user._id,
-      }),
-    );
-};
-
-exports.update = async (req, res) => {
-  const notam = await Notam.findOne({ _id: req.params.id, user: req.user._id });
-  if (!notam) return res.status(404).json({ message: "NOTAM not found." });
-  notam.set(cleanBody(req.body, fields));
-  await notam.save();
-  res.json(notam);
-};
-
-exports.remove = async (req, res) => {
-  const notam = await Notam.findOneAndDelete({
-    _id: req.params.id,
-    user: req.user._id,
-  });
-  if (!notam) return res.status(404).json({ message: "NOTAM not found." });
-  res.json({ message: "NOTAM deleted." });
-};
-
-exports.refresh = (req, res) => {
-  res.status(503).json({
-    message:
-      "Live NOTAM retrieval is not supported in this version. Add notices manually from an official briefing source. Training examples are not real NOTAMs.",
-    available: false,
-  });
+  res.sendStatus(204);
 };
