@@ -1,51 +1,57 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "../api";
-import Icon from "../components/Icon";
+import {
+  AirplaneIcon,
+  AirplaneTiltIcon,
+  CaretRightIcon,
+  CheckIcon,
+  MagnifyingGlassIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@phosphor-icons/react";
 import Modal from "../components/Modal";
+import DeleteRecordDialog from "../components/DeleteRecordDialog";
 import "./records.css";
 
 const startingAircraft = {
   registration: "",
-  model: "Cessna 172S",
-  type: "Single-engine piston",
-  emptyWeight: 1720,
-  emptyArm: 40,
-  maxWeight: 2550,
-  cgMin: 35,
-  cgMax: 47.3,
-  fuelCapacity: 56,
-  fuelBurn: 9,
-  cruiseSpeed: 120,
-  frontArm: 37,
-  rearArm: 73,
-  baggageArm: 95,
-  fuelArm: 48,
+  type: "",
+  emptyWeight: "",
+  emptyArm: "",
+  maxWeight: "",
+  cgMin: "",
+  cgMax: "",
+  fuelCapacity: "",
+  fuelBurn: "",
+  cruiseSpeed: "",
+  frontArm: "",
+  rearArm: "",
+  baggageArm: "",
+  fuelArm: "",
   equipment: "",
   notes: "",
 };
 
-const numberFields = [
-  "emptyWeight",
-  "emptyArm",
-  "maxWeight",
-  "cgMin",
-  "cgMax",
-  "fuelCapacity",
-  "fuelBurn",
-  "cruiseSpeed",
-  "frontArm",
-  "rearArm",
-  "baggageArm",
-  "fuelArm",
-];
+function modelLabel({ icaoCode, manufacturer, model }) {
+  return `${icaoCode} — ${manufacturer} ${model}`;
+}
 
-export default function Aircraft({ aircraft = [], refresh, notify, online }) {
+function normalizeModel(value) {
+  return value.normalize("NFKD").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+export default function Aircraft({ aircraft = [], refreshAfterChange, online }) {
   const [search, setSearch] = useState("");
   const [form, setForm] = useState(null);
   const [expanded, setExpanded] = useState(null);
   const [deleting, setDeleting] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [catalog, setCatalog] = useState(null);
+  const [modelInput, setModelInput] = useState("");
+  const [modelError, setModelError] = useState("");
+  const request = useRef(null);
 
   const visibleAircraft = aircraft.filter((item) =>
     `${item.registration} ${item.model} ${item.type}`
@@ -53,32 +59,76 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
       .includes(search.toLowerCase()),
   );
 
-  function openForm(item) {
+  const modelQuery = normalizeModel(modelInput);
+  const modelOptions =
+    form && catalog
+      ? catalog
+          .filter((entry) => normalizeModel(modelLabel(entry)).includes(modelQuery))
+          .slice(0, 60)
+      : [];
+
+  async function openForm(item) {
     setError("");
+    setModelError("");
+    setModelInput(item?.model || "");
     setForm(item ? { ...startingAircraft, ...item } : { ...startingAircraft });
+
+    const pending = new AbortController();
+    request.current = pending;
+    try {
+      const entries = catalog ?? (await api("/aircraft/catalog", { signal: pending.signal }));
+      if (pending.signal.aborted) return;
+      if (!catalog) setCatalog(entries);
+      if (!item) return;
+      const matches = item.catalogId
+        ? entries.filter((entry) => entry.id === item.catalogId)
+        : entries.filter(
+            (entry) =>
+              normalizeModel(`${entry.manufacturer} ${entry.model}`) ===
+              normalizeModel(item.model),
+          );
+      if (matches.length === 1) {
+        setModelInput(modelLabel(matches[0]));
+      } else {
+        setModelError("Select a model from the aircraft catalog before saving this profile.");
+      }
+    } catch (err) {
+      if (!pending.signal.aborted) setModelError(err.message);
+    }
+  }
+
+  function closeForm() {
+    request.current?.abort();
+    setForm(null);
+  }
+
+  function changeModel(event) {
+    setModelInput(event.target.value);
+    setModelError("");
   }
 
   function change(event) {
     const { name, value } = event.target;
-    setForm({
-      ...form,
+    setForm((current) => ({
+      ...current,
       [name]: name === "registration" ? value.toUpperCase() : value,
-    });
+    }));
   }
 
   async function save(event) {
     event.preventDefault();
     if (!online || saving) return;
     setError("");
-    const values = { ...form };
-    numberFields.forEach((name) => {
-      values[name] = Number(values[name]);
-    });
-    if (values.emptyWeight >= values.maxWeight) {
+    const model = catalog?.find((entry) => modelLabel(entry) === modelInput);
+    if (!model) {
+      setModelError("Select a model from the aircraft catalog.");
+      return;
+    }
+    if (Number(form.emptyWeight) >= Number(form.maxWeight)) {
       setError("Maximum takeoff weight must be greater than empty weight.");
       return;
     }
-    if (values.cgMin >= values.cgMax) {
+    if (Number(form.cgMin) >= Number(form.cgMax)) {
       setError("The aft CG limit must be greater than the forward CG limit.");
       return;
     }
@@ -86,44 +136,13 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
     try {
       await api(form._id ? `/aircraft/${form._id}` : "/aircraft", {
         method: form._id ? "PUT" : "POST",
-        body: values,
+        body: { ...form, catalogId: model.id },
       });
-      setForm(null);
+      closeForm();
       const message = form._id
         ? "Aircraft updated."
         : "Aircraft added to your fleet.";
-      try {
-        await refresh();
-        notify(message);
-      } catch (err) {
-        notify(
-          `${message} The list could not refresh: ${err.message}`,
-          "error",
-        );
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function remove() {
-    if (!online || saving) return;
-    setSaving(true);
-    setError("");
-    try {
-      await api(`/aircraft/${deleting._id}`, { method: "DELETE" });
-      setDeleting(null);
-      try {
-        await refresh();
-        notify("Aircraft removed.");
-      } catch (err) {
-        notify(
-          `Aircraft removed. The list could not refresh: ${err.message}`,
-          "error",
-        );
-      }
+      await refreshAfterChange(message);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -154,31 +173,21 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">YOUR HANGAR</p>
           <h1>Aircraft</h1>
-          <p className="page-intro">
-            A familiar aircraft. Every detail in one place.
-          </p>
         </div>
         <button
           className="button"
           onClick={() => openForm()}
           disabled={!online}
         >
-          <Icon name="plus" /> Add aircraft
+          <PlusIcon /> Add aircraft
         </button>
       </div>
 
-      {!online && (
-        <p className="record-notice" role="status">
-          <Icon name="info" /> Your saved aircraft are available offline.
-          Reconnect to make changes.
-        </p>
-      )}
 
       <div className="record-toolbar">
         <div className="record-search">
-          <Icon name="search" />
+          <MagnifyingGlassIcon />
           <label className="record-sr-only" htmlFor="aircraft-search">
             Search aircraft
           </label>
@@ -197,11 +206,11 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
 
       {visibleAircraft.length === 0 ? (
         <div className="card empty-state">
-          <Icon name="aircraft" />
+          <AirplaneIcon />
           <h2>
             {search
               ? "No aircraft match your search"
-              : "Your hangar starts here"}
+              : "No aircraft yet"}
           </h2>
           <p>
             {search
@@ -214,7 +223,7 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
               onClick={() => openForm()}
               disabled={!online}
             >
-              <Icon name="plus" /> Add your first aircraft
+              <PlusIcon /> Add your first aircraft
             </button>
           )}
         </div>
@@ -225,7 +234,7 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
               <div className="aircraft-card-top">
                 <span className="badge">{item.type || "Aircraft"}</span>
                 <span className="aircraft-mark" aria-hidden="true">
-                  <Icon name="plane" />
+                  <AirplaneTiltIcon />
                 </span>
               </div>
               <div className="aircraft-identity">
@@ -280,7 +289,7 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
               </div>
               {item.equipment && (
                 <p className="aircraft-equipment">
-                  <Icon name="check" /> {item.equipment}
+                  <CheckIcon /> {item.equipment}
                 </p>
               )}
               <button
@@ -294,7 +303,7 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
                 {expanded === item._id
                   ? "Hide aircraft details"
                   : "View aircraft details"}
-                <Icon name="chevron" />
+                <CaretRightIcon />
               </button>
               {expanded === item._id && (
                 <div
@@ -342,18 +351,15 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
                   onClick={() => openForm(item)}
                   disabled={!online}
                 >
-                  <Icon name="edit" /> Edit profile
+                  <PencilSimpleIcon /> Edit profile
                 </button>
                 <button
                   className="icon-button"
                   aria-label={`Delete aircraft ${item.registration}`}
-                  onClick={() => {
-                    setError("");
-                    setDeleting(item);
-                  }}
+                  onClick={() => setDeleting(item)}
                   disabled={!online}
                 >
-                  <Icon name="trash" />
+                  <TrashIcon />
                 </button>
               </div>
             </article>
@@ -365,13 +371,13 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
         <Modal
           title={form._id ? `Edit ${form.registration}` : "Add an aircraft"}
           onClose={() => {
-            if (!saving) setForm(null);
+            if (!saving) closeForm();
           }}
         >
           <form onSubmit={save} className="record-form" aria-busy={saving}>
             <p className="muted">
               Use your aircraft's approved flight manual and current weight and
-              balance record. Starting values are examples.
+              balance record.
             </p>
             {error && (
               <p className="record-error" role="alert">
@@ -397,13 +403,28 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
                   <label htmlFor="aircraft-model">Model</label>
                   <input
                     id="aircraft-model"
-                    name="model"
-                    value={form.model}
-                    onChange={change}
+                    list="aircraft-model-options"
+                    value={modelInput}
+                    onChange={changeModel}
                     required
-                    maxLength={100}
-                    placeholder="Cessna 172S"
+                    disabled={!catalog}
+                    autoComplete="off"
+                    placeholder="Search by ICAO code or model"
+                    aria-invalid={Boolean(modelError)}
+                    aria-describedby="aircraft-model-status"
                   />
+                  <datalist id="aircraft-model-options">
+                    {modelOptions.map((entry) => (
+                      <option key={entry.id} value={modelLabel(entry)} />
+                    ))}
+                  </datalist>
+                  <div id="aircraft-model-status" aria-live="polite">
+                    {modelError ? (
+                      <small className="record-model-error">{modelError}</small>
+                    ) : !catalog ? (
+                      <small>Loading aircraft catalog…</small>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="field record-full">
                   <label htmlFor="aircraft-type">Aircraft type</label>
@@ -489,11 +510,14 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
                 className="button secondary"
                 type="button"
                 disabled={saving}
-                onClick={() => setForm(null)}
+                onClick={closeForm}
               >
                 Cancel
               </button>
-              <button className="button" disabled={saving || !online}>
+              <button
+                className="button"
+                disabled={saving || !online || !catalog}
+              >
                 {saving ? "Saving…" : "Save aircraft"}
               </button>
             </div>
@@ -502,38 +526,17 @@ export default function Aircraft({ aircraft = [], refresh, notify, online }) {
       )}
 
       {deleting && (
-        <Modal
+        <DeleteRecordDialog
           title={`Delete ${deleting.registration}?`}
-          onClose={() => {
-            if (!saving) setDeleting(null);
-          }}
+          noun="aircraft"
+          path={`/aircraft/${deleting._id}`}
+          online={online}
+          onClose={() => setDeleting(null)}
+          onDeleted={() => refreshAfterChange("Aircraft removed.")}
         >
-          <p>
-            This will remove this aircraft profile. An aircraft assigned to a
-            planned flight must be reassigned or its flight plan deleted first.
-          </p>
-          {error && (
-            <p className="record-error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="form-actions">
-            <button
-              className="button secondary"
-              disabled={saving}
-              onClick={() => setDeleting(null)}
-            >
-              Keep aircraft
-            </button>
-            <button
-              className="button record-danger"
-              disabled={saving || !online}
-              onClick={remove}
-            >
-              {saving ? "Deleting…" : "Delete aircraft"}
-            </button>
-          </div>
-        </Modal>
+          This will remove this aircraft profile. An aircraft assigned to a
+          planned flight must be reassigned or its flight plan deleted first.
+        </DeleteRecordDialog>
       )}
     </>
   );

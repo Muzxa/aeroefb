@@ -37,6 +37,7 @@ router.post("/auth/logout", auth.logout);
 router.use(auth.requireAuth);
 router.get("/auth/me", auth.me);
 router.put("/auth/profile", auth.profile);
+router.get("/aircraft/catalog", aircraft.catalog);
 router.get("/aircraft", aircraft.list);
 router.post("/aircraft", aircraft.create);
 router.put("/aircraft/:id", aircraft.update);

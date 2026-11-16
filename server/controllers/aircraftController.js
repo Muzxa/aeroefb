@@ -1,6 +1,16 @@
 const Aircraft = require("../models/Aircraft");
 const Flight = require("../models/Flight");
-const { cleanBody } = require("../middleware/validation");
+const { badRequest, cleanBody } = require("../middleware/validation");
+const rows = require("../data/aircraft-types.json");
+
+const aircraftCatalog = rows.map(([icaoCode, manufacturer, model]) => ({
+  id: [icaoCode, manufacturer, model].join("|"),
+  icaoCode,
+  manufacturer,
+  model,
+}));
+
+const catalogById = new Map(aircraftCatalog.map((entry) => [entry.id, entry]));
 
 const numbers = [
   "emptyWeight",
@@ -18,12 +28,29 @@ const numbers = [
 ];
 const fields = [
   "registration",
-  "model",
+  "catalogId",
   "type",
   "equipment",
   "notes",
   ...numbers,
 ];
+
+function aircraftData(body, existing) {
+  const data = cleanBody(body, fields, numbers);
+  const entry = catalogById.get(data.catalogId ?? existing?.catalogId);
+  if (!entry) throw badRequest("Select an aircraft model from the catalog.");
+  if (entry.id !== existing?.catalogId && numbers.some((field) => data[field] === undefined))
+    throw badRequest("Complete all required aircraft numbers before saving.");
+
+  return {
+    ...data,
+    catalogId: entry.id,
+    icaoCode: entry.icaoCode,
+    model: `${entry.manufacturer} ${entry.model}`,
+  };
+}
+
+exports.catalog = (req, res) => res.json(aircraftCatalog);
 
 exports.list = async (req, res) => {
   res.json(
@@ -32,7 +59,7 @@ exports.list = async (req, res) => {
 };
 
 exports.create = async (req, res) => {
-  const data = cleanBody(req.body, fields, numbers);
+  const data = aircraftData(req.body);
   res.status(201).json(await Aircraft.create({ ...data, user: req.user._id }));
 };
 
@@ -43,7 +70,7 @@ exports.update = async (req, res) => {
   });
   if (!aircraft)
     return res.status(404).json({ message: "Aircraft not found." });
-  aircraft.set(cleanBody(req.body, fields, numbers));
+  aircraft.set(aircraftData(req.body, aircraft));
   await aircraft.save();
   // Saved plans keep their aircraft registration in sync with this profile.
   await Flight.updateMany(
