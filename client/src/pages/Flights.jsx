@@ -1,8 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { api } from "../api";
-import Icon from "../components/Icon";
+import { readFlightPlan } from "../flightPlan";
+import {
+  AirplaneTiltIcon,
+  BookOpenTextIcon,
+  CaretRightIcon,
+  CheckIcon,
+  MagnifyingGlassIcon,
+  PathIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@phosphor-icons/react";
 import Modal from "../components/Modal";
+import DeleteRecordDialog from "../components/DeleteRecordDialog";
 import "./records.css";
 
 const checklistLabels = [
@@ -25,8 +37,7 @@ export default function Flights({
   aircraft = [],
   flights = [],
   logbook = [],
-  refresh,
-  notify,
+  refreshAfterChange,
   online,
 }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -37,13 +48,18 @@ export default function Flights({
   const [expanded, setExpanded] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState("");
+  const importInput = useRef(null);
 
-  function openForm(flight) {
+  function openForm(flight, importedDraft) {
     setError("");
+    setImportError("");
     setForm(
       flight
         ? {
             ...flight,
+            fuelUnit: flight.fuelUnit ?? "US gal",
             alternate: flight.alternate || "",
             checklist: [...flight.checklist],
           }
@@ -60,11 +76,44 @@ export default function Flights({
             altitude: 6500,
             duration: 1,
             fuel: 20,
+            fuelUnit: "US gal",
             status: "Planned",
             notes: "",
             checklist: [false, false, false, false, false],
+            ...importedDraft,
           },
     );
+  }
+
+  async function importPlan(event) {
+    const file = event.target.files[0];
+    event.target.value = "";
+    if (!file) return;
+    setImportError("");
+    setImporting(true);
+    try {
+      const plan = await readFlightPlan(file);
+      const selected = aircraft.find((item) => item.registration === plan.aircraftRegistration);
+      if (plan.aircraftRegistration && !selected) {
+        setImportError(
+          `No aircraft in your fleet has registration ${plan.aircraftRegistration}. Add it on the Aircraft page, then import the flight plan again.`,
+        );
+        return;
+      }
+      openForm(null, {
+        date: "",
+        departureTime: "",
+        duration: "",
+        fuel: "",
+        ...plan,
+        aircraftId: selected?._id || "",
+        aircraftRegistration: selected?.registration || "",
+      });
+    } catch (err) {
+      setImportError(err.message || "The .pln file could not be read.");
+    } finally {
+      setImporting(false);
+    }
   }
 
   useEffect(() => {
@@ -98,6 +147,10 @@ export default function Flights({
 
   function change(event) {
     const { name, value } = event.target;
+    if (name === "fuelUnit") {
+      setForm({ ...form, fuelUnit: value, fuel: "", fuelDensityKgPerL: undefined });
+      return;
+    }
     if (name === "aircraftId") {
       const selected = aircraft.find((item) => item._id === value);
       setForm({
@@ -105,16 +158,19 @@ export default function Flights({
         aircraftId: value,
         aircraftRegistration: selected?.registration || "",
       });
-    } else {
-      setForm({
-        ...form,
-        [name]: ["departure", "destination", "alternate", "route"].includes(
-          name,
-        )
-          ? value.toUpperCase()
-          : value,
-      });
+      return;
     }
+
+    const affectsRoute = ["departure", "destination", "route"].includes(name);
+    const nextValue =
+      affectsRoute || name === "alternate" ? value.toUpperCase() : value;
+    setForm((current) => ({
+      ...current,
+      [name]: nextValue,
+      ...(current.importedRoute && affectsRoute && current[name] !== nextValue
+        ? { importedRoute: null }
+        : {}),
+    }));
   }
 
   async function save(event) {
@@ -139,38 +195,7 @@ export default function Flights({
       });
       setForm(null);
       const message = form._id ? "Flight plan updated." : "Flight plan saved.";
-      try {
-        await refresh();
-        notify(message);
-      } catch (err) {
-        notify(
-          `${message} The list could not refresh: ${err.message}`,
-          "error",
-        );
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function remove() {
-    if (!online || saving) return;
-    setSaving(true);
-    setError("");
-    try {
-      await api(`/flights/${deleting._id}`, { method: "DELETE" });
-      setDeleting(null);
-      try {
-        await refresh();
-        notify("Flight plan deleted.");
-      } catch (err) {
-        notify(
-          `Flight plan deleted. The list could not refresh: ${err.message}`,
-          "error",
-        );
-      }
+      await refreshAfterChange(message);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -182,27 +207,41 @@ export default function Flights({
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">THE JOURNEY AHEAD</p>
           <h1>Flight plans</h1>
-          <p className="page-intro">From first waypoint to final approach.</p>
         </div>
-        <button
-          className="button"
-          onClick={() => openForm()}
-          disabled={!online}
-        >
-          <Icon name="plus" /> New flight
-        </button>
+        <div className="record-heading-actions">
+          <input
+            ref={importInput}
+            type="file"
+            accept=".pln,.xml"
+            aria-label="Flight plan file"
+            hidden
+            onChange={importPlan}
+          />
+          <button
+            type="button"
+            className="button secondary"
+            onClick={() => importInput.current.click()}
+            disabled={!online || importing}
+          >
+            {importing ? "Reading flight plan…" : "Import flight plan"}
+          </button>
+          <button
+            type="button"
+            className="button"
+            onClick={() => openForm()}
+            disabled={!online || importing}
+          >
+            <PlusIcon /> New flight
+          </button>
+        </div>
       </div>
-      {!online && (
-        <p className="record-notice" role="status">
-          <Icon name="info" /> Your saved plans are available offline. Reconnect
-          to create, edit or log a flight.
-        </p>
+      {importError && (
+        <p className="record-error" role="alert">{importError}</p>
       )}
       <div className="record-toolbar">
         <div className="record-search">
-          <Icon name="search" />
+          <MagnifyingGlassIcon />
           <label className="record-sr-only" htmlFor="flight-search">
             Search flight plans
           </label>
@@ -230,24 +269,22 @@ export default function Flights({
 
       {visibleFlights.length === 0 ? (
         <div className="card empty-state">
-          <Icon name="route" />
+          <PathIcon />
           <h2>
             {search || status !== "All flights"
               ? "No flights match these filters"
-              : "Where will you fly next?"}
+              : "No flight plans yet"}
           </h2>
-          <p>
-            {search || status !== "All flights"
-              ? "Try another airport or choose all flights."
-              : "Build your first flight plan and keep the essential details together."}
-          </p>
+          {(search || status !== "All flights") && (
+            <p>Try another airport or choose all flights.</p>
+          )}
           {!search && status === "All flights" && (
             <button
               className="button"
               onClick={() => openForm()}
               disabled={!online}
             >
-              <Icon name="plus" /> Plan a flight
+              <PlusIcon /> Plan a flight
             </button>
           )}
         </div>
@@ -277,7 +314,7 @@ export default function Flights({
                   </div>
                   <div className="flight-route-line" aria-hidden="true">
                     <span />
-                    <Icon name="plane" />
+                    <AirplaneTiltIcon />
                     <span />
                   </div>
                   <div className="flight-destination">
@@ -311,7 +348,7 @@ export default function Flights({
                 </dl>
                 <div className="flight-check-progress">
                   <span>
-                    <Icon name="check" /> Preflight checklist
+                    <CheckIcon /> Preflight checklist
                   </span>
                   <strong>{completeCount} / 5</strong>
                 </div>
@@ -336,7 +373,7 @@ export default function Flights({
                   {expanded === flight._id
                     ? "Hide flight details"
                     : "View flight details"}
-                  <Icon name="chevron" />
+                  <CaretRightIcon />
                 </button>
                 {expanded === flight._id && (
                   <div
@@ -350,7 +387,7 @@ export default function Flights({
                       </div>
                       <div>
                         <dt>Planned fuel</dt>
-                        <dd>{flight.fuel} US gal</dd>
+                        <dd>{flight.fuel} {flight.fuelUnit ?? "US gal"}</dd>
                       </div>
                     </dl>
                     <ul className="flight-checklist">
@@ -360,7 +397,7 @@ export default function Flights({
                             className={`record-check ${flight.checklist[index] ? "is-checked" : ""}`}
                             aria-hidden="true"
                           >
-                            {flight.checklist[index] && <Icon name="check" />}
+                            {flight.checklist[index] && <CheckIcon />}
                           </span>
                           <span>
                             {label}
@@ -385,20 +422,17 @@ export default function Flights({
                     onClick={() => openForm(flight)}
                     disabled={!online}
                   >
-                    <Icon name="edit" /> Edit plan
+                    <PencilSimpleIcon /> Edit plan
                   </button>
-                  {logged ? (
-                    <Link className="button ghost" to="/logbook">
-                      <Icon name="book" /> Logged
-                    </Link>
-                  ) : online ? (
+                  {!logged && online && (
                     <Link
                       className="button ghost"
                       to={`/logbook?flight=${flight._id}`}
                     >
-                      <Icon name="book" /> Log flight
+                      <BookOpenTextIcon /> Log flight
                     </Link>
-                  ) : (
+                  )}
+                  {!logged && !online && (
                     <button className="button ghost" disabled>
                       Log flight
                     </button>
@@ -407,12 +441,9 @@ export default function Flights({
                     className="icon-button"
                     aria-label={`Delete flight ${flight.departure} to ${flight.destination}`}
                     disabled={!online}
-                    onClick={() => {
-                      setError("");
-                      setDeleting(flight);
-                    }}
+                    onClick={() => setDeleting(flight)}
                   >
-                    <Icon name="trash" />
+                    <TrashIcon />
                   </button>
                 </div>
               </article>
@@ -570,19 +601,42 @@ export default function Flights({
                   />
                 </div>
                 <div className="field">
-                  <label htmlFor="flight-fuel">Planned fuel (US gal)</label>
+                  <label htmlFor="flight-fuel">Planned fuel ({form.fuelUnit})</label>
                   <input
                     id="flight-fuel"
                     name="fuel"
                     type="number"
                     min="0"
-                    max="100000"
                     step="any"
                     required
                     value={form.fuel}
                     onChange={change}
                   />
                 </div>
+                <div className="field">
+                  <label htmlFor="flight-fuelUnit">Fuel unit</label>
+                  <select id="flight-fuelUnit" name="fuelUnit" value={form.fuelUnit} onChange={change}>
+                    <option>US gal</option>
+                    <option>kg</option>
+                  </select>
+                </div>
+                {form.fuelUnit === "kg" && (
+                  <div className="field">
+                    <label htmlFor="flight-density">Fuel density (kg/L)</label>
+                    <input
+                      id="flight-density"
+                      name="fuelDensityKgPerL"
+                      type="number"
+                      min="0"
+                      step="any"
+                      required
+                      value={form.fuelDensityKgPerL ?? ""}
+                      onChange={change}
+                      aria-describedby="flight-density-help"
+                    />
+                    <small id="flight-density-help">Used to check the aircraft’s capacity in US gallons.</small>
+                  </div>
+                )}
                 <div className="field">
                   <label htmlFor="flight-status">Status</label>
                   <select
@@ -610,10 +664,6 @@ export default function Flights({
             </fieldset>
             <fieldset disabled={saving || !online}>
               <legend>Preflight checklist</legend>
-              <p className="muted record-field-help">
-                Mark a check only after you have reviewed the relevant
-                information.
-              </p>
               <div className="record-checkboxes">
                 {checklistLabels.map((label, index) => (
                   <label className="record-checkbox" key={label}>
@@ -657,39 +707,18 @@ export default function Flights({
       )}
 
       {deleting && (
-        <Modal
+        <DeleteRecordDialog
           title="Delete this flight plan?"
-          onClose={() => {
-            if (!saving) setDeleting(null);
-          }}
+          noun="flight"
+          path={`/flights/${deleting._id}`}
+          online={online}
+          onClose={() => setDeleting(null)}
+          onDeleted={() => refreshAfterChange("Flight plan deleted.")}
         >
-          <p>
-            Your {deleting.departure} to {deleting.destination} flight plan on{" "}
-            {dateLabel(deleting.date)} will be removed. Any existing logbook
-            entry will be kept.
-          </p>
-          {error && (
-            <p className="record-error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="form-actions">
-            <button
-              className="button secondary"
-              disabled={saving}
-              onClick={() => setDeleting(null)}
-            >
-              Keep flight
-            </button>
-            <button
-              className="button record-danger"
-              disabled={saving || !online}
-              onClick={remove}
-            >
-              {saving ? "Deleting…" : "Delete flight"}
-            </button>
-          </div>
-        </Modal>
+          Your {deleting.departure} to {deleting.destination} flight plan on{" "}
+          {dateLabel(deleting.date)} will be removed. Any existing logbook
+          entry will be kept.
+        </DeleteRecordDialog>
       )}
     </>
   );

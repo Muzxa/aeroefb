@@ -1,8 +1,23 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../api";
-import Icon from "../components/Icon";
+import {
+  AirplaneTiltIcon,
+  ArrowRightIcon,
+  BookOpenTextIcon,
+  ClockIcon,
+  CompassIcon,
+  DownloadSimpleIcon,
+  InfoIcon,
+  MagnifyingGlassIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  TrashIcon,
+  UserIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import Modal from "../components/Modal";
+import DeleteRecordDialog from "../components/DeleteRecordDialog";
 import "./records.css";
 
 const timeFields = ["totalTime", "pic", "sic", "ifr", "night"];
@@ -25,7 +40,7 @@ export default function Logbook({
   logbook = [],
   flights = [],
   aircraft = [],
-  refresh,
+  refreshAfterChange,
   notify,
   online,
 }) {
@@ -165,7 +180,7 @@ export default function Logbook({
         try {
           await api(`/flights/${linkedFlight._id}`, {
             method: "PUT",
-            body: { ...linkedFlight, status: "Completed" },
+            body: { status: "Completed" },
           });
         } catch (err) {
           message = `Entry saved. The flight status could not be updated: ${err.message}`;
@@ -173,36 +188,7 @@ export default function Logbook({
         }
       }
       setForm(null);
-      try {
-        await refresh();
-      } catch (err) {
-        message += ` The list could not refresh: ${err.message}`;
-        warning = true;
-      }
-      notify(message, warning ? "error" : "success");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function remove() {
-    if (!online || saving) return;
-    setSaving(true);
-    setError("");
-    try {
-      await api(`/logbook/${deleting._id}`, { method: "DELETE" });
-      setDeleting(null);
-      try {
-        await refresh();
-        notify("Logbook entry deleted.");
-      } catch (err) {
-        notify(
-          `Logbook entry deleted. The list could not refresh: ${err.message}`,
-          "error",
-        );
-      }
+      await refreshAfterChange(message, warning ? "error" : "success");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -282,9 +268,7 @@ export default function Logbook({
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">EVERY FLIGHT COUNTS</p>
           <h1>Pilot logbook</h1>
-          <p className="page-intro">Your experience, one flight at a time.</p>
         </div>
         <div className="record-heading-actions">
           <button
@@ -292,39 +276,38 @@ export default function Logbook({
             onClick={exportCsv}
             disabled={visibleEntries.length === 0}
           >
-            <Icon name="download" /> Export CSV
+            <DownloadSimpleIcon /> Export CSV
           </button>
           <button
             className="button"
             disabled={!online}
             onClick={() => openForm()}
           >
-            <Icon name="plus" /> Add flight
+            <PlusIcon /> Add flight
           </button>
         </div>
       </div>
       {!online && (
         <p className="record-notice" role="status">
-          <Icon name="info" /> Your saved logbook is available offline,
-          including CSV export. Reconnect to make changes.
+          <InfoIcon /> CSV export is available offline.
         </p>
       )}
       {pageMessage && (
         <p className="record-notice" role="status">
-          <Icon name="info" /> {pageMessage}
+          <InfoIcon /> {pageMessage}
           <button
             className="icon-button"
             aria-label="Dismiss logbook notice"
             onClick={() => setPageMessage("")}
           >
-            <Icon name="close" />
+            <XIcon />
           </button>
         </p>
       )}
       <div className="logbook-totals">
         <div className="card logbook-total">
           <span className="logbook-total-icon">
-            <Icon name="clock" />
+            <ClockIcon />
           </span>
           <p>Total flight time</p>
           <strong>
@@ -334,7 +317,7 @@ export default function Logbook({
         </div>
         <div className="card logbook-total">
           <span className="logbook-total-icon">
-            <Icon name="user" />
+            <UserIcon />
           </span>
           <p>Pilot in command</p>
           <strong>
@@ -346,7 +329,7 @@ export default function Logbook({
         </div>
         <div className="card logbook-total">
           <span className="logbook-total-icon">
-            <Icon name="compass" />
+            <CompassIcon />
           </span>
           <p>Instrument time</p>
           <strong>
@@ -356,7 +339,7 @@ export default function Logbook({
         </div>
         <div className="card logbook-total">
           <span className="logbook-total-icon">
-            <Icon name="plane" />
+            <AirplaneTiltIcon />
           </span>
           <p>Landings</p>
           <strong>{totals.landings}</strong>
@@ -370,7 +353,6 @@ export default function Logbook({
         <div className="section-heading">
           <div>
             <h2 id="logbook-records-heading">Flight history</h2>
-            <p className="muted">Times shown in decimal hours.</p>
           </div>
           <span className="badge">
             {visibleEntries.length}{" "}
@@ -379,7 +361,7 @@ export default function Logbook({
         </div>
         <div className="record-toolbar">
           <div className="record-search">
-            <Icon name="search" />
+            <MagnifyingGlassIcon />
             <label className="record-sr-only" htmlFor="logbook-search">
               Search logbook
             </label>
@@ -407,24 +389,22 @@ export default function Logbook({
         </div>
         {visibleEntries.length === 0 ? (
           <div className="empty-state">
-            <Icon name="book" />
+            <BookOpenTextIcon />
             <h2>
               {search || year !== "All years"
                 ? "No matching flights"
-                : "A new chapter starts here"}
+                : "No logbook entries yet"}
             </h2>
-            <p>
-              {search || year !== "All years"
-                ? "Try another search or select all years."
-                : "Log a completed flight to start tracking your flying experience."}
-            </p>
+            {(search || year !== "All years") && (
+              <p>Try another search or select all years.</p>
+            )}
             {!search && year === "All years" && (
               <button
                 className="button"
                 disabled={!online}
                 onClick={() => openForm()}
               >
-                <Icon name="plus" /> Add your first flight
+                <PlusIcon /> Add your first flight
               </button>
             )}
           </div>
@@ -461,7 +441,7 @@ export default function Logbook({
                       <td className="logbook-date">{dateLabel(entry.date)}</td>
                       <td>
                         <strong className="logbook-route">
-                          {entry.departure} <span aria-label="to">→</span>{" "}
+                          {entry.departure} <span className="sr-only">to</span><ArrowRightIcon size={14} />{" "}
                           {entry.destination}
                         </strong>
                         <span className="logbook-aircraft">
@@ -488,7 +468,7 @@ export default function Logbook({
                             aria-haspopup="dialog"
                             onClick={() => setExpanded(entry._id)}
                           >
-                            <Icon name="info" />
+                            <InfoIcon />
                           </button>
                           <button
                             className="icon-button"
@@ -496,18 +476,15 @@ export default function Logbook({
                             disabled={!online}
                             onClick={() => openForm(entry)}
                           >
-                            <Icon name="edit" />
+                            <PencilSimpleIcon />
                           </button>
                           <button
                             className="icon-button"
                             aria-label={`Delete flight on ${dateLabel(entry.date)} from ${entry.departure}`}
                             disabled={!online}
-                            onClick={() => {
-                              setError("");
-                              setDeleting(entry);
-                            }}
+                            onClick={() => setDeleting(entry)}
                           >
-                            <Icon name="trash" />
+                            <TrashIcon />
                           </button>
                         </div>
                       </td>
@@ -572,7 +549,7 @@ export default function Logbook({
           <form onSubmit={save} className="record-form" aria-busy={saving}>
             {form.flightId && !form._id && (
               <p className="record-notice">
-                <Icon name="info" /> Details are filled from your plan. Confirm
+                <InfoIcon /> Details are filled from your plan. Confirm
                 actual times before saving. This will mark the flight complete.
               </p>
             )}
@@ -744,40 +721,19 @@ export default function Logbook({
         </Modal>
       )}
       {deleting && (
-        <Modal
+        <DeleteRecordDialog
           title="Delete this logbook entry?"
-          onClose={() => {
-            if (!saving) setDeleting(null);
-          }}
+          noun="entry"
+          path={`/logbook/${deleting._id}`}
+          online={online}
+          onClose={() => setDeleting(null)}
+          onDeleted={() => refreshAfterChange("Logbook entry deleted.")}
         >
-          <p>
-            The {deleting.departure} to {deleting.destination} entry on{" "}
-            {dateLabel(deleting.date)} and its{" "}
-            {Number(deleting.totalTime).toFixed(1)} flight hours will be removed
-            from your logbook.
-          </p>
-          {error && (
-            <p className="record-error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="form-actions">
-            <button
-              className="button secondary"
-              disabled={saving}
-              onClick={() => setDeleting(null)}
-            >
-              Keep entry
-            </button>
-            <button
-              className="button record-danger"
-              disabled={saving || !online}
-              onClick={remove}
-            >
-              {saving ? "Deleting…" : "Delete entry"}
-            </button>
-          </div>
-        </Modal>
+          The {deleting.departure} to {deleting.destination} entry on{" "}
+          {dateLabel(deleting.date)} and its{" "}
+          {Number(deleting.totalTime).toFixed(1)} flight hours will be removed
+          from your logbook.
+        </DeleteRecordDialog>
       )}
     </>
   );

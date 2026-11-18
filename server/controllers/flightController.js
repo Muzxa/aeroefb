@@ -3,7 +3,8 @@ const Flight = require("../models/Flight");
 const LogEntry = require("../models/LogEntry");
 const { cleanBody, badRequest } = require("../middleware/validation");
 
-const numbers = ["altitude", "duration", "fuel"];
+const litresPerUsGallon = 3.785411784;
+const numbers = ["altitude", "duration", "fuel", "fuelDensityKgPerL"];
 const fields = [
   "departure",
   "destination",
@@ -14,6 +15,7 @@ const fields = [
   "aircraftId",
   "aircraftRegistration",
   "flightRules",
+  "fuelUnit",
   "status",
   "notes",
   "checklist",
@@ -22,6 +24,16 @@ const fields = [
 
 async function flightData(req, existing) {
   const data = cleanBody(req.body, fields, numbers);
+  if (req.body.importedRoute !== undefined) {
+    data.importedRoute = req.body.importedRoute;
+  } else if (
+    existing?.importedRoute &&
+    ["departure", "destination", "route"].some(
+      (field) => data[field] !== undefined && data[field] !== existing[field],
+    )
+  ) {
+    data.importedRoute = null;
+  }
   const aircraftId = data.aircraftId || existing?.aircraftId;
   if (!aircraftId) throw badRequest("Select an aircraft.");
   const aircraft = await Aircraft.findOne({
@@ -38,11 +50,31 @@ async function flightData(req, existing) {
     );
   }
   data.aircraftRegistration = aircraft.registration;
-  const fuel = data.fuel === undefined ? existing?.fuel : data.fuel;
-  if (fuel > aircraft.fuelCapacity)
-    throw badRequest(
-      `Fuel exceeds this aircraft's ${aircraft.fuelCapacity} gal capacity.`,
-    );
+  const fuel = data.fuel ?? existing?.fuel ?? 0;
+  const previousUnit = existing?.fuelUnit ?? "US gal";
+  const unit = data.fuelUnit ?? previousUnit;
+  if (unit !== "kg" && unit !== "US gal")
+    throw badRequest("Choose kg or US gal for planned fuel.");
+  if (existing && unit !== previousUnit && data.fuel === undefined)
+    throw badRequest("Enter the planned fuel amount in the new unit.");
+
+  let capacity = aircraft.fuelCapacity;
+  const density = data.fuelDensityKgPerL ?? existing?.fuelDensityKgPerL;
+  if (unit === "kg") {
+    if (!(density > 0))
+      throw badRequest("Enter the fuel density in kg/L to check the aircraft’s tank capacity.");
+    capacity = aircraft.fuelCapacity * litresPerUsGallon * density;
+    if (!Number.isFinite(capacity))
+      throw badRequest("Enter a valid fuel density in kg/L.");
+  } else {
+    data.fuelDensityKgPerL = undefined;
+  }
+  if (fuel > capacity) {
+    const limit = unit === "kg"
+      ? `${capacity.toLocaleString("en-US", { maximumFractionDigits: 3 })} kg at ${density} kg/L (${aircraft.fuelCapacity} US gal)`
+      : `${capacity} US gal`;
+    throw badRequest(`Planned fuel exceeds the aircraft's capacity of ${limit}.`);
+  }
   return data;
 }
 
