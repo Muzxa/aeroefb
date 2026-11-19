@@ -1,13 +1,37 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import Icon from "../components/Icon";
+import {
+  AirplaneIcon,
+  ArrowClockwiseIcon,
+  InfoIcon,
+} from "@phosphor-icons/react";
 import "./tools.css";
 
+function profileNumber(value) {
+  return value == null || (typeof value === "string" && !value.trim()) ? NaN : Number(value);
+}
+
 function pounds(value) {
-  const number = Number(value || 0);
+  const number = profileNumber(value);
   return Number.isFinite(number)
     ? number.toLocaleString(undefined, { maximumFractionDigits: 1 })
     : "—";
+}
+
+function aircraftConfigError(aircraft, rows) {
+  if (!aircraft) return "";
+  if (!(profileNumber(aircraft.emptyWeight) > 0))
+    return "Enter a positive empty weight in the aircraft profile.";
+  if (!(profileNumber(aircraft.maxWeight) > 0))
+    return "Enter a positive maximum weight in the aircraft profile.";
+  if (!(profileNumber(aircraft.cgMax) > profileNumber(aircraft.cgMin)))
+    return "Set the maximum CG above the minimum CG in the aircraft profile.";
+  if (!(profileNumber(aircraft.fuelCapacity) >= 0))
+    return "Enter the aircraft’s fuel capacity in its profile.";
+  const station = rows.find((row) => !Number.isFinite(row.arm) || row.arm < 0);
+  return station
+    ? `Enter a nonnegative arm for ${station.name.toLowerCase()} in the aircraft profile.`
+    : "";
 }
 
 export default function Balance({ aircraft = [] }) {
@@ -19,39 +43,34 @@ export default function Balance({ aircraft = [] }) {
     fuel: "",
   });
 
-  useEffect(() => {
-    if (!aircraft.some((item) => item._id === aircraftId))
-      setAircraftId(aircraft[0]?._id || "");
-  }, [aircraft]);
-
-  const selected = aircraft.find((item) => item._id === aircraftId);
+  const selected = aircraft.find((item) => item._id === aircraftId) || aircraft[0];
   const gallons = Number(loading.fuel || 0);
   const rows = selected
     ? [
         {
           name: "Basic empty aircraft",
-          weight: Number(selected.emptyWeight || 0),
-          arm: Number(selected.emptyArm || 0),
+          weight: profileNumber(selected.emptyWeight),
+          arm: profileNumber(selected.emptyArm),
         },
         {
           name: "Front occupants",
           weight: Number(loading.front || 0),
-          arm: Number(selected.frontArm || 0),
+          arm: profileNumber(selected.frontArm),
         },
         {
           name: "Rear occupants",
           weight: Number(loading.rear || 0),
-          arm: Number(selected.rearArm || 0),
+          arm: profileNumber(selected.rearArm),
         },
         {
           name: "Baggage",
           weight: Number(loading.baggage || 0),
-          arm: Number(selected.baggageArm || 0),
+          arm: profileNumber(selected.baggageArm),
         },
         {
           name: "Usable fuel",
           weight: gallons * 6,
-          arm: Number(selected.fuelArm || 0),
+          arm: profileNumber(selected.fuelArm),
         },
       ]
     : [];
@@ -61,12 +80,8 @@ export default function Balance({ aircraft = [] }) {
     0,
   );
   const cg = totalWeight ? totalMoment / totalWeight : 0;
-  const configValid =
-    selected &&
-    Number(selected.emptyWeight) > 0 &&
-    Number(selected.maxWeight) > 0 &&
-    Number(selected.cgMax) > Number(selected.cgMin) &&
-    rows.every((row) => Number.isFinite(row.arm) && row.arm >= 0);
+  const configError = aircraftConfigError(selected, rows);
+  const configValid = Boolean(selected) && !configError;
   const valuesValid =
     totalWeight > 0 &&
     Number.isFinite(totalWeight) &&
@@ -79,22 +94,21 @@ export default function Balance({ aircraft = [] }) {
   const outsideCg =
     selected && (cg < Number(selected.cgMin) || cg > Number(selected.cgMax));
   const overFuel = selected && gallons > Number(selected.fuelCapacity);
-  const overBaggage =
-    selected?.maxBaggage != null &&
-    Number(loading.baggage) > Number(selected.maxBaggage);
   const withinLimits =
     configValid &&
     valuesValid &&
     !overWeight &&
     !outsideCg &&
-    !overFuel &&
-    !overBaggage;
+    !overFuel;
   const xMin = selected ? Math.min(Number(selected.cgMin) - 5, cg - 2) : 0;
   const xMax = selected ? Math.max(Number(selected.cgMax) + 5, cg + 2) : 1;
   const yMax = selected
     ? Math.max(Number(selected.maxWeight) * 1.15, totalWeight * 1.1)
     : 1;
-  const chartX = (value) => 65 + ((value - xMin) / (xMax - xMin)) * 365;
+  const chartLeft = 100;
+  const chartRight = 430;
+  const chartX = (value) =>
+    chartLeft + ((value - xMin) / (xMax - xMin)) * (chartRight - chartLeft);
   const chartY = (value) => 270 - (value / yMax) * 220;
 
   function changeLoading(event) {
@@ -110,32 +124,12 @@ export default function Balance({ aircraft = [] }) {
     <>
       <div className="page-heading">
         <div>
-          <p className="eyebrow">AIRCRAFT LOADING</p>
-          <h1>Weight &amp; balance</h1>
-          <p className="page-intro">
-            Understand your loading before you leave the ground.
-          </p>
+          <h1>Weight and balance</h1>
         </div>
-        <button
-          className="button secondary"
-          onClick={() => window.print()}
-          disabled={!selected}
-        >
-          <Icon name="download" /> Print worksheet
-        </button>
-      </div>
-      <div className="briefing-advisory balance-advisory">
-        <Icon name="info" />
-        <p>
-          This educational calculator uses a constant CG range and a fuel
-          density of 6 lb/US gal for avgas. Verify all aircraft data and the
-          full loading envelope in the aircraft’s approved POH. It is not flight
-          certified.
-        </p>
       </div>
       {!aircraft.length ? (
         <section className="card empty-state briefing-empty">
-          <Icon name="aircraft" />
+          <AirplaneIcon />
           <h2>Add your aircraft first</h2>
           <p>
             An aircraft profile provides the weights, arms and limits used in
@@ -151,13 +145,12 @@ export default function Balance({ aircraft = [] }) {
             <section className="card loading-card">
               <div className="section-heading">
                 <h2>Loading worksheet</h2>
-                <span className="badge blue">lb / in</span>
               </div>
               <div className="field">
                 <label htmlFor="balance-aircraft">Aircraft</label>
                 <select
                   id="balance-aircraft"
-                  value={aircraftId}
+                  value={selected?._id ?? ""}
                   onChange={(event) => setAircraftId(event.target.value)}
                 >
                   {aircraft.map((item) => (
@@ -167,9 +160,6 @@ export default function Balance({ aircraft = [] }) {
                   ))}
                 </select>
               </div>
-              <p className="muted loading-instruction">
-                Enter the combined weight at each loading station.
-              </p>
               <div className="loading-fields">
                 <div className="field">
                   <label htmlFor="front-weight">
@@ -225,17 +215,18 @@ export default function Balance({ aircraft = [] }) {
                     name="fuel"
                     type="number"
                     min="0"
-                    max={selected?.fuelCapacity || undefined}
+                    max={selected?.fuelCapacity ?? undefined}
                     step="0.1"
                     value={loading.fuel}
                     onChange={changeLoading}
                     placeholder="0"
-                    aria-describedby="fuel-capacity"
+                    aria-describedby={selected?.fuelCapacity != null ? "fuel-capacity" : undefined}
                   />
-                  <p className="muted field-help" id="fuel-capacity">
-                    Capacity {pounds(selected?.fuelCapacity)} US gal ·{" "}
-                    {pounds(gallons * 6)} lb loaded
-                  </p>
+                  {selected?.fuelCapacity != null && (
+                    <p className="muted field-help" id="fuel-capacity">
+                      max: {selected.fuelCapacity} US gal
+                    </p>
+                  )}
                 </div>
               </div>
               <button
@@ -244,7 +235,7 @@ export default function Balance({ aircraft = [] }) {
                   setLoading({ front: "", rear: "", baggage: "", fuel: "" })
                 }
               >
-                <Icon name="refresh" /> Reset loading
+                <ArrowClockwiseIcon /> Reset loading
               </button>
             </section>
             <section
@@ -301,14 +292,14 @@ export default function Balance({ aircraft = [] }) {
                       <g key={fraction}>
                         <line
                           className="chart-grid-line"
-                          x1="65"
-                          x2="430"
+                          x1={chartLeft}
+                          x2={chartRight}
                           y1={chartY(Number(selected.maxWeight) * fraction)}
                           y2={chartY(Number(selected.maxWeight) * fraction)}
                         />
                         <text
                           className="chart-tick"
-                          x="54"
+                          x={chartLeft - 11}
                           y={chartY(Number(selected.maxWeight) * fraction) + 4}
                           textAnchor="end"
                         >
@@ -328,15 +319,15 @@ export default function Balance({ aircraft = [] }) {
                     />
                     <line
                       className="chart-axis"
-                      x1="65"
-                      x2="430"
+                      x1={chartLeft}
+                      x2={chartRight}
                       y1="270"
                       y2="270"
                     />
                     <line
                       className="chart-axis"
-                      x1="65"
-                      x2="65"
+                      x1={chartLeft}
+                      x2={chartLeft}
                       y1="45"
                       y2="270"
                     />
@@ -372,7 +363,7 @@ export default function Balance({ aircraft = [] }) {
                     )}
                     <text
                       className="chart-label"
-                      x="248"
+                      x={(chartLeft + chartRight) / 2}
                       y="317"
                       textAnchor="middle"
                     >
@@ -410,48 +401,33 @@ export default function Balance({ aircraft = [] }) {
                     range <span className="point-key" /> Current loading
                   </figcaption>
                 </figure>
-              ) : (
-                <p className="muted">
-                  Set a positive empty weight, maximum weight and valid CG range
-                  in the aircraft profile to calculate a result.
-                </p>
-              )}
-              <div
-                className={`balance-status ${withinLimits ? "status-pass" : "status-review"}`}
-                role="status"
-              >
-                <Icon name={withinLimits ? "check" : "info"} />
-                <div>
-                  <strong>
-                    {withinLimits
-                      ? "Loading meets the configured checks"
-                      : "Review the loading before proceeding"}
-                  </strong>
-                  <p>
-                    {!configValid
-                      ? "Complete the aircraft weight and CG limits."
-                      : !valuesValid
-                        ? "All loading values must be positive numbers or zero."
-                        : overFuel
-                          ? "The loaded fuel exceeds the aircraft fuel capacity."
-                          : overBaggage
-                            ? "Baggage exceeds the configured limit."
+              ) : null}
+              {selected && !withinLimits && (
+                <div className="balance-status status-review" role="status">
+                  <InfoIcon />
+                  <div>
+                    {configValid && <strong>Review the loading before proceeding</strong>}
+                    <p>
+                      {!configValid
+                        ? configError
+                        : !valuesValid
+                          ? "All loading values must be positive numbers or zero."
+                          : overFuel
+                            ? "The loaded fuel exceeds the aircraft fuel capacity."
                             : overWeight && outsideCg
                               ? "Weight and centre of gravity are outside the configured limits."
                               : overWeight
                                 ? "The total weight exceeds the maximum aircraft weight."
-                                : outsideCg
-                                  ? "The centre of gravity is outside the configured range."
-                                  : `${pounds(Number(selected?.maxWeight) - totalWeight)} lb below the configured maximum. Confirm the approved POH envelope.`}
-                  </p>
+                                : "The centre of gravity is outside the configured range."}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </section>
           </div>
           <section className="card moments-card">
             <div className="section-heading">
-              <h2>The calculation</h2>
-              <span className="muted">Moment = weight × arm</span>
+              <h2>Summary</h2>
             </div>
             <div className="table-wrap">
               <table className="data-table loading-table">

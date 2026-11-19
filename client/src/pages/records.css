@@ -110,6 +110,12 @@
 .record-form .field {
   margin-bottom: 16px;
 }
+.record-form input[aria-invalid="true"] {
+  border-color: #9f1239;
+}
+.record-form .field .record-model-error {
+  color: #9f1239;
+}
 .record-field-help {
   margin: -6px 0 18px;
   font-size: 0.875rem;

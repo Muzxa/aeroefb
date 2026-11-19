@@ -1,12 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&family=Manrope:wght@400;500;600;650;700;750;800&display=swap");
 
 :root {
-  --a11y-black: #000;
-  --a11y-white: #fff;
-  --a11y-blue: #1e40af;
-  --a11y-green: #166534;
-  --a11y-ink: #111827;
-  --a11y-text: #374151;
   --ink: #172021;
   --muted: #46534c;
   --line: #d9dfdb;
@@ -41,6 +35,7 @@ textarea {
   -webkit-tap-highlight-color: transparent;
 }
 button {
+  color: inherit;
   cursor: pointer;
 }
 button:disabled {
@@ -93,9 +88,6 @@ p {
 }
 small {
   font-size: 0.8125rem;
-}
-button {
-  color: inherit;
 }
 ::selection {
   background: #cbd8fb;
@@ -168,8 +160,8 @@ main:focus {
 }
 .button.secondary {
   background: #fff;
-  border-color: #b6c1bb;
   color: var(--ink);
+  border-color: #738077;
 }
 .button.secondary:hover {
   background: #f1f4ef;
@@ -181,11 +173,6 @@ main:focus {
 }
 .button.ghost:hover {
   background: #edf1fb;
-}
-.button.danger {
-  background: #9f1c22;
-  border-color: #9f1c22;
-  color: #fff;
 }
 .icon-button {
   display: inline-flex;
@@ -237,19 +224,14 @@ main:focus {
   border-color: #d9e2fc;
 }
 .badge.green {
-  color: #166534;
   background: #edf7ee;
   border-color: #cde3cf;
+  color: #14532d;
 }
 .badge.amber {
   color: #78350f;
   background: #fff7df;
   border-color: #eedfb8;
-}
-.badge.red {
-  color: #991b1b;
-  background: #fff0ee;
-  border-color: #f4ceca;
 }
 .card {
   background: #fff;
@@ -293,12 +275,6 @@ main:focus {
 .section-heading h2 > svg {
   color: var(--muted);
 }
-.panel-description {
-  font-size: 0.8125rem;
-  color: var(--muted);
-  margin-top: -10px;
-  margin-bottom: 16px;
-}
 /* Navigation */
 .sidebar {
   width: 250px;
@@ -310,6 +286,7 @@ main:focus {
   display: flex;
   flex-direction: column;
   padding: 29px 18px 0;
+  overflow-y: auto;
 }
 .brand {
   display: flex;
@@ -321,7 +298,7 @@ main:focus {
   font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: -1px;
-  padding: 0 12px;
+  padding: 0 8px;
   line-height: 1.2;
 }
 .brand-mark {
@@ -337,56 +314,6 @@ main:focus {
 .brand-light {
   font-weight: 500;
 }
-.brand small {
-  display: block;
-  font-family: "DM Sans", sans-serif;
-  font-size: 0.75rem;
-  letter-spacing: 1.6px;
-  font-weight: 650;
-  margin-top: 7px;
-  color: #46534c;
-}
-.workspace-switch {
-  display: flex;
-  gap: 11px;
-  align-items: center;
-  border: 1px solid var(--line);
-  background: #fbfcf9;
-  border-radius: 7px;
-  margin: 31px 0 28px;
-  padding: 11px 9px;
-}
-.workspace-switch > svg {
-  margin-left: auto;
-  color: var(--muted);
-}
-.workspace-avatar {
-  width: 32px;
-  height: 33px;
-  border: 1px solid #dce3dc;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  background: #fff;
-}
-.workspace-switch strong {
-  font-size: 0.75rem;
-  display: block;
-  line-height: 1.5;
-}
-.workspace-switch div > span {
-  font-size: 0.75rem;
-  color: var(--muted);
-  display: block;
-}
-.nav-label {
-  font-size: 0.75rem;
-  letter-spacing: 1.7px;
-  color: #46534c;
-  font-weight: 700;
-  margin: 0 13px 10px;
-}
 .sidebar nav {
   display: flex;
   flex-direction: column;
@@ -395,15 +322,15 @@ main:focus {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 12px;
   min-height: 47px;
-  padding: 10px 13px;
+  padding: 10px 11px;
   border-radius: 7px;
   color: #48544f;
-  font-size: 0.8125rem;
   font-weight: 550;
   text-decoration: none;
   border: 1px solid transparent;
+  font-size: 0.9375rem;
+  gap: 11px;
 }
 .nav-item:hover {
   background: #f2f4ef;
@@ -422,6 +349,7 @@ main:focus {
   text-align: center;
   background: #d8e3ff;
   border-radius: 4px;
+  color: #172021;
 }
 .sidebar-bottom {
   margin-top: auto;
@@ -437,13 +365,12 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 86px;
   width: 100%;
   text-align: left;
   padding: 15px 5px;
+  min-height: 85px;
 }
-.user-avatar,
-.top-avatar {
+.user-avatar {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -462,16 +389,16 @@ main:focus {
   overflow: hidden;
 }
 .sidebar-user strong {
-  font-size: 0.75rem;
   display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 0.8125rem;
 }
 .sidebar-user small {
-  font-size: 0.75rem;
   display: block;
   color: var(--muted);
+  font-size: 0.75rem;
 }
 .sidebar-user > svg {
   color: var(--muted);
@@ -480,71 +407,10 @@ main:focus {
   margin-left: 250px;
 }
 .topbar {
-  height: 79px;
-  display: flex;
+  display: none;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 0 36px;
   border-bottom: 1px solid var(--line);
   background: #fff;
-}
-.topbar-left,
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 17px;
-  font-size: 0.75rem;
-}
-.topbar-workspace {
-  color: var(--muted);
-}
-.breadcrumb-slash {
-  color: #46534c;
-}
-.breadcrumb-current {
-  font-weight: 600;
-}
-.utc-clock {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
-  color: #374b41;
-}
-.utc-clock > span {
-  color: var(--muted);
-  font-size: 0.75rem;
-  letter-spacing: 1px;
-}
-.connection-status {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 0.75rem;
-  color: var(--green);
-  border-left: 1px solid var(--line);
-  padding-left: 17px;
-}
-.status-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #166534;
-}
-.connection-status.offline {
-  color: #78350f;
-}
-.offline .status-dot {
-  background: #78350f;
-}
-.top-avatar {
-  width: 36px;
-  min-width: 44px;
-  min-height: 44px;
-  text-decoration: none;
 }
 .mobile-menu {
   display: none;
@@ -616,10 +482,11 @@ main:focus {
 }
 .stat-label {
   display: block;
-  font-size: 0.75rem;
   color: #4c5a52;
   margin-bottom: 8px;
   font-weight: 550;
+  font-size: 0.875rem;
+  max-width: calc(100% - 28px);
 }
 .stat-card > strong {
   display: block;
@@ -636,12 +503,6 @@ main:focus {
   letter-spacing: 0;
   color: var(--muted);
 }
-.stat-detail {
-  display: block;
-  color: var(--muted);
-  font-size: 0.75rem;
-  margin-top: 7px;
-}
 .home-stat > strong {
   font-size: 1.65rem;
   line-height: 1.4;
@@ -652,7 +513,9 @@ main:focus {
   gap: 22px;
   margin-bottom: 23px;
 }
-.next-flight-card {
+.card.next-flight-card {
+  display: flex;
+  flex-direction: column;
   padding: 22px 0 0;
   overflow: hidden;
 }
@@ -660,24 +523,26 @@ main:focus {
   padding: 0 23px;
   margin-bottom: 21px;
 }
-.flight-overview {
-  display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  min-height: 244px;
-}
 .flight-overview-details {
-  padding: 0 22px 24px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 23px 24px;
 }
 .route-airports {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 14px;
   margin: 10px 0 20px;
 }
 .route-airports > div {
   display: flex;
   flex-direction: column;
+}
+.route-airports > div:last-child {
+  text-align: right;
 }
 .route-airports > div > .eyebrow {
   font-size: 0.75rem;
@@ -692,8 +557,8 @@ main:focus {
   line-height: 1.4;
 }
 .route-airports > div > span:last-child {
-  font-size: 0.75rem;
   color: var(--muted);
+  font-size: 0.8125rem;
 }
 .route-airports > svg {
   color: #647a96;
@@ -704,9 +569,9 @@ main:focus {
   gap: 14px;
   flex-wrap: wrap;
   color: #47564e;
-  font-size: 0.75rem;
   padding-bottom: 21px;
   border-bottom: 1px solid #e6e9e3;
+  font-size: 0.8125rem;
 }
 .flight-meta > span {
   display: flex;
@@ -714,8 +579,9 @@ main:focus {
   gap: 6px;
 }
 .flight-numbers {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  overflow-wrap: anywhere;
   gap: 10px;
   padding-top: 18px;
 }
@@ -726,69 +592,13 @@ main:focus {
   margin-bottom: 4px;
 }
 .flight-numbers strong {
-  font-size: 0.75rem;
   font-weight: 700;
+  font-size: 0.875rem;
 }
 .flight-numbers strong small {
   font-size: 0.75rem;
   font-weight: 400;
   color: var(--muted);
-}
-.route-map {
-  position: relative;
-  overflow: hidden;
-  min-height: 246px;
-  border-top: 1px solid #e2e6df;
-  border-left: 1px solid #e2e6df;
-  background: #eef2ef;
-}
-.map-drawing {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.map-label {
-  position: absolute;
-  top: 11px;
-  left: 10px;
-  font-size: 0.75rem;
-  font-weight: 650;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: #fff;
-  padding: 5px 8px;
-  border: 1px solid #d6dfd7;
-  border-radius: 4px;
-}
-.map-north {
-  position: absolute;
-  right: 11px;
-  top: 11px;
-  background: #fff;
-  border: 1px solid #d6dfd7;
-  border-radius: 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 0.75rem;
-  line-height: 1;
-  padding: 5px 8px;
-  gap: 4px;
-}
-.map-north span {
-  font-size: 1.25rem;
-}
-.map-disclaimer {
-  position: absolute;
-  bottom: 8px;
-  right: 10px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  background: #fff9;
-  padding: 1px 4px;
-  color: #374d3e;
 }
 .flight-card-footer {
   display: flex;
@@ -798,15 +608,7 @@ main:focus {
   padding: 8px 23px;
   background: #fcfcfa;
   border-top: 1px solid var(--line);
-  font-size: 0.75rem;
   min-height: 56px;
-}
-.flight-card-footer > span {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-.flight-card-footer .text-link {
   font-size: 0.75rem;
 }
 .checklist-card {
@@ -815,22 +617,19 @@ main:focus {
 .checklist-card > .section-heading {
   margin-bottom: 6px;
 }
-.checklist-card h2 {
-  font-size: 1rem;
+.checklist-card > .section-heading h2 {
+  font-size: 1.125rem;
 }
 .checklist-count {
   font-family: Manrope, sans-serif;
   font-size: 1rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 .checklist-count > span {
   color: #617065;
   font-size: 0.75rem;
   margin-left: 2px;
-}
-.checklist-intro {
-  font-size: 0.75rem;
-  margin-bottom: 13px;
 }
 .checklist-progress {
   height: 4px;
@@ -849,8 +648,8 @@ main:focus {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 47px;
   border-bottom: 1px solid #edf0e9;
+  min-height: 59px;
 }
 .checklist-item:last-child {
   border: 0;
@@ -867,29 +666,20 @@ main:focus {
   flex: 1;
 }
 .checklist-item label {
-  font-size: 0.75rem;
   line-height: 1.4;
   font-weight: 700;
   display: block;
   cursor: pointer;
+  font-size: 0.875rem;
 }
 .checklist-item > div > span {
-  font-size: 0.75rem;
   color: var(--muted);
   display: block;
   line-height: 1.5;
+  font-size: 0.75rem;
 }
 .checklist-item .icon-button {
-  min-width: 32px;
   padding: 5px;
-}
-.checklist-note {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--muted);
-  font-size: 0.75rem;
-  margin: 9px 0 0;
 }
 .dashboard-bottom-grid {
   display: grid;
@@ -911,6 +701,9 @@ main:focus {
   border-left: 1px solid var(--line);
   padding-left: 18px;
 }
+.weather-station > small {
+  font-size: 0.75rem;
+}
 .station-heading {
   display: flex;
   align-items: center;
@@ -926,9 +719,9 @@ main:focus {
 }
 .station-heading > div > span {
   display: block;
-  font-size: 0.75rem;
   color: var(--muted);
   margin-top: 2px;
+  font-size: 0.75rem;
 }
 .station-heading .badge {
   font-size: 0.75rem;
@@ -957,24 +750,26 @@ main:focus {
 .weather-details {
   display: flex;
   gap: 14px;
-  font-size: 0.75rem;
   margin-bottom: 5px;
   color: #3f5146;
   flex-wrap: wrap;
+  font-size: 0.8125rem;
 }
 .weather-details > span {
   display: flex;
   align-items: center;
   gap: 5px;
 }
-.weather-station > small {
-  font-size: 0.75rem;
-}
 .panel-footnote {
   padding: 10px 0;
   border-top: 1px solid var(--line);
   font-size: 0.75rem;
   color: var(--muted);
+}
+.panel-footnote a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 .weather-unavailable {
   font-size: 0.75rem;
@@ -1017,9 +812,9 @@ main:focus {
   flex: 1;
 }
 .recent-row > div > strong {
-  font-size: 0.8125rem;
   display: block;
   line-height: 1.5;
+  font-size: 0.9375rem;
 }
 .route-separator {
   color: #57675d;
@@ -1027,13 +822,13 @@ main:focus {
   font-weight: 400;
 }
 .recent-row > div > span {
-  font-size: 0.75rem;
   color: var(--muted);
   display: block;
+  font-size: 0.8125rem;
 }
 .recent-hours {
-  font-size: 0.8125rem;
   white-space: nowrap;
+  font-size: 0.9375rem;
 }
 .recent-hours small {
   font-size: 0.75rem;
@@ -1042,29 +837,6 @@ main:focus {
 }
 .recent-row > svg {
   color: var(--muted);
-}
-.dashboard-logbook-note {
-  border-top: 1px solid var(--line);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 0;
-  color: var(--muted);
-  font-size: 0.75rem;
-}
-.workspace-note {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.75rem;
-  color: var(--muted);
-  padding: 23px 2px 0;
-}
-.workspace-note-brand {
-  margin-left: auto;
-  white-space: nowrap;
-  font-size: 0.75rem;
-  letter-spacing: 1px;
 }
 /* Forms and shared record controls */
 .form-grid {
@@ -1084,7 +856,6 @@ main:focus {
 .form-grid .field {
   margin: 0;
 }
-.field.full,
 .form-grid .full-width {
   grid-column: 1/-1;
 }
@@ -1098,13 +869,31 @@ select,
 textarea {
   width: 100%;
   min-height: 46px;
-  border: 1px solid #9caaa0;
+  border: 1px solid #738077;
   border-radius: 6px;
   padding: 10px 12px;
   color: var(--ink);
   background: white;
   font-size: 0.9375rem;
   line-height: 1.5;
+}
+input:not([type="checkbox"]):not([type="radio"]) {
+  border-color: #738077;
+}
+select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("./assets/caret-down.svg");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+@media (forced-colors: active) {
+  select {
+    appearance: auto;
+    padding-right: 12px;
+    background-image: none;
+  }
 }
 textarea {
   resize: vertical;
@@ -1113,7 +902,7 @@ textarea {
 input:disabled,
 select:disabled,
 textarea:disabled {
-  background: #f1f3ef;
+  background-color: #f1f3ef;
   color: #56625b;
 }
 input[type="checkbox"] {
@@ -1151,10 +940,6 @@ legend {
   padding: 10px 12px;
   border-radius: 5px;
   font-size: 0.8125rem;
-}
-.form-hint {
-  font-size: 0.8125rem;
-  color: var(--muted);
 }
 .empty-state {
   text-align: center;
@@ -1333,18 +1118,6 @@ legend {
   width: 100%;
   margin-top: 10px;
 }
-.auth-footnote {
-  font-size: 0.75rem !important;
-  text-align: center;
-  color: var(--muted);
-  margin: 18px 0 0;
-}
-.auth-disclaimer {
-  text-align: center;
-  margin-top: 24px;
-  font-size: 0.75rem;
-  color: var(--muted);
-}
 .boot-error {
   max-width: 460px;
   margin: 0 auto 20px;
@@ -1363,15 +1136,6 @@ legend {
 @media (min-width: 1600px) {
   .main-content {
     padding-top: 43px;
-  }
-  .flight-overview {
-    min-height: 285px;
-  }
-  .route-map {
-    min-height: 285px;
-  }
-  .checklist-item {
-    min-height: 53px;
   }
   .flight-overview-details {
     padding-top: 10px;
@@ -1392,11 +1156,17 @@ legend {
 }
 @media (max-width: 1250px) {
   .sidebar {
-    width: 226px;
     padding-inline: 13px;
+    width: 235px;
   }
   .app-shell {
-    margin-left: 226px;
+    margin-left: 235px;
+  }
+  .sidebar-bottom {
+    padding-top: 20px;
+  }
+  .profile-nav {
+    margin-bottom: 8px;
   }
   .topbar {
     padding: 0 26px;
@@ -1404,51 +1174,27 @@ legend {
   .main-content {
     padding: 28px 26px 22px;
   }
-  .flight-dashboard-grid {
-    grid-template-columns: minmax(0, 1.6fr) minmax(270px, 1fr);
+  .flight-dashboard-grid,
+  .dashboard-bottom-grid {
     gap: 17px;
-  }
-  .flight-overview {
     grid-template-columns: 1fr;
-  }
-  .route-map {
-    min-height: 160px;
-    border-left: 0;
   }
   .flight-overview-details {
     padding-bottom: 20px;
   }
-  .map-drawing {
-    width: 100%;
-    height: 100%;
-  }
-  .flight-numbers {
-    justify-content: flex-start;
-    gap: 28px;
-  }
   .route-airports {
-    justify-content: flex-start;
-    gap: 30px;
     margin: 5px 0 15px;
   }
-  .flight-card-footer .muted {
-    display: none;
-  }
-  .checklist-item {
-    min-height: 64px;
+  .route-airports > div > strong {
+    font-size: 1.8rem;
   }
   .checklist-card {
     padding: 22px 19px 16px;
   }
-  .checklist-item label {
-    font-size: 0.75rem;
-  }
-  .checklist-item > div > span {
-    font-size: 0.75rem;
-  }
-  .checklist-note {
-    font-size: 0.75rem;
-    margin-top: 20px;
+  .checklist-items {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 22px;
   }
   .stats-grid {
     gap: 13px;
@@ -1460,58 +1206,16 @@ legend {
     right: 14px;
     top: 14px;
   }
-  .stat-label {
-    max-width: calc(100% - 21px);
-  }
-  .dashboard-bottom-grid {
-    gap: 17px;
-  }
   .station-heading {
     flex-wrap: wrap;
   }
-  .topbar-right {
-    gap: 12px;
-  }
 }
 @media (max-width: 1000px) {
-  .sidebar {
-    width: 214px;
-  }
-  .app-shell {
-    margin-left: 214px;
-  }
   .main-content {
     padding: 25px 22px;
   }
   .topbar {
     padding: 0 22px;
-  }
-  .topbar-workspace,
-  .breadcrumb-slash {
-    display: none;
-  }
-  .flight-dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-  .flight-overview {
-    grid-template-columns: 1fr 1fr;
-  }
-  .route-map {
-    min-height: 230px;
-  }
-  .checklist-items {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 22px;
-  }
-  .checklist-item {
-    min-height: 56px;
-  }
-  .checklist-note {
-    margin-top: 12px;
-  }
-  .dashboard-bottom-grid {
-    grid-template-columns: 1fr;
   }
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1531,21 +1235,22 @@ legend {
   .page-heading h1 {
     font-size: 2.1rem;
   }
-  .utc-clock {
-    display: none;
-  }
-  .workspace-note-brand {
-    display: none;
-  }
 }
 @media (max-width: 760px) {
   .sidebar {
     transform: translateX(-100%);
-    width: 260px;
-    overflow-y: auto;
+    width: 270px;
+    visibility: hidden;
   }
   .sidebar.open {
     transform: translateX(0);
+    visibility: visible;
+  }
+  .sidebar nav {
+    gap: 4px;
+  }
+  .app-shell {
+    margin-left: 0;
   }
   .sidebar-backdrop {
     display: block;
@@ -1555,29 +1260,13 @@ legend {
     background: #0b172955;
     border: 0;
   }
-  .app-shell {
-    margin-left: 0;
-  }
   .mobile-menu {
     display: flex;
   }
   .topbar {
+    display: flex;
     height: 68px;
     padding: 0 18px;
-  }
-  .topbar-left {
-    gap: 8px;
-  }
-  .topbar-right {
-    gap: 10px;
-  }
-  .top-avatar {
-    display: none;
-  }
-  .connection-status {
-    border: 0;
-    padding: 0;
-    font-size: 0.75rem;
   }
   .main-content {
     padding: 27px 19px 20px;
@@ -1586,12 +1275,6 @@ legend {
     flex-wrap: wrap;
     gap: 17px;
     margin-bottom: 24px;
-  }
-  .dashboard-heading > .button {
-    width: auto;
-  }
-  .page-heading h1 {
-    font-size: 2.1rem;
   }
   .page-intro {
     font-size: 0.875rem;
@@ -1607,78 +1290,23 @@ legend {
   .stat-card > strong {
     font-size: 1.75rem;
   }
-  .stat-label {
-    font-size: 0.75rem;
-  }
-  .stat-detail {
-    font-size: 0.75rem;
-  }
   .flight-dashboard-grid,
   .dashboard-bottom-grid {
     gap: 19px;
     margin-bottom: 19px;
   }
-  .flight-overview {
-    grid-template-columns: 1fr;
+  .flight-card-footer {
+    flex-wrap: wrap;
+    gap: 0;
   }
-  .route-map {
-    min-height: 200px;
-  }
-  .route-airports {
-    justify-content: space-between;
-    gap: 20px;
-  }
-  .flight-overview-details {
-    padding-inline: 22px;
-  }
-  .route-airports > div > strong {
-    font-size: 2rem;
-  }
-  .route-airports > div > .eyebrow {
-    font-size: 0.75rem;
-  }
-  .route-airports > div > span:last-child {
-    font-size: 0.8125rem;
-  }
-  .flight-meta {
-    font-size: 0.75rem;
-  }
-  .flight-numbers {
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .flight-numbers > div > span {
-    font-size: 0.75rem;
-  }
-  .flight-numbers strong {
-    font-size: 0.875rem;
-  }
-  .section-heading h2 {
-    font-size: 1rem;
-  }
-  .section-heading .text-link {
+  .flight-card-footer .text-link {
     font-size: 0.75rem;
   }
   .checklist-items {
     grid-template-columns: 1fr;
   }
-  .checklist-item {
-    min-height: 59px;
-  }
-  .checklist-item label {
-    font-size: 0.875rem;
-  }
-  .checklist-item > div > span {
-    font-size: 0.75rem;
-  }
-  .checklist-card h2 {
-    font-size: 1.125rem;
-  }
-  .checklist-intro {
-    font-size: 0.8125rem;
-  }
-  .checklist-note {
-    font-size: 0.75rem;
+  .section-heading h2 {
+    font-size: 1rem;
   }
   .weather-stations {
     gap: 14px;
@@ -1686,41 +1314,20 @@ legend {
   .weather-station + .weather-station {
     padding-left: 14px;
   }
-  .weather-station > small {
-    font-size: 0.75rem;
-  }
-  .weather-details {
-    font-size: 0.75rem;
-  }
-  .panel-description {
-    font-size: 0.75rem;
-  }
   .station-heading strong {
     font-size: 1.1rem;
-  }
-  .station-heading > div > span {
-    font-size: 0.75rem;
-  }
-  .recent-row > div > strong {
-    font-size: 0.875rem;
-  }
-  .recent-row > div > span {
-    font-size: 0.75rem;
-  }
-  .workspace-note {
-    font-size: 0.75rem;
-    align-items: flex-start;
-    padding-top: 5px;
   }
   .form-grid {
     grid-template-columns: 1fr;
   }
-  .form-grid .full-width,
-  .field.full {
+  .form-grid .full-width {
     grid-column: auto;
   }
   .card {
     padding: 20px;
+  }
+  .checklist-card {
+    padding-bottom: 16px;
   }
   .modal-body {
     padding: 20px;
@@ -1731,9 +1338,6 @@ legend {
   .offline-banner {
     padding: 12px 19px;
   }
-  .eyebrow {
-    font-size: 0.75rem;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1743,286 +1347,4 @@ legend {
     transition: none !important;
     scroll-behavior: auto !important;
   }
-}
-@media print {
-  .sidebar,
-  .topbar,
-  .notification,
-  .page-heading > .button,
-  .workspace-note,
-  .no-print {
-    display: none !important;
-  }
-  .app-shell {
-    margin: 0;
-  }
-  .main-content {
-    padding: 0;
-  }
-  .card {
-    break-inside: avoid;
-  }
-  body {
-    background: #fff;
-  }
-  a {
-    color: #000;
-  }
-}
-
-/* Keep supporting text readable at the default zoom level. */
-.nav-item {
-  font-size: 0.9375rem;
-}
-.sidebar-user strong {
-  font-size: 0.8125rem;
-}
-.sidebar-user small {
-  font-size: 0.75rem;
-}
-.workspace-switch strong {
-  font-size: 0.875rem;
-}
-.workspace-switch div > span {
-  font-size: 0.75rem;
-}
-.stat-label {
-  font-size: 0.875rem;
-}
-.stat-detail {
-  font-size: 0.75rem;
-}
-.checklist-item label {
-  font-size: 0.875rem;
-}
-.checklist-item > div > span {
-  font-size: 0.75rem;
-}
-.checklist-item {
-  min-height: 59px;
-}
-.checklist-card h2 {
-  font-size: 1.125rem;
-}
-.checklist-intro {
-  font-size: 0.8125rem;
-}
-.checklist-note {
-  font-size: 0.75rem;
-  line-height: 1.5;
-}
-.route-airports > div > span:last-child {
-  font-size: 0.8125rem;
-}
-.flight-numbers strong {
-  font-size: 0.875rem;
-}
-.flight-meta {
-  font-size: 0.8125rem;
-}
-.flight-card-footer {
-  font-size: 0.75rem;
-}
-.flight-overview-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.flight-overview {
-  min-height: 298px;
-}
-.route-map {
-  min-height: 298px;
-}
-.panel-description {
-  font-size: 0.875rem;
-}
-.recent-row > div > strong {
-  font-size: 0.9375rem;
-}
-.recent-row > div > span {
-  font-size: 0.8125rem;
-}
-.recent-hours {
-  font-size: 0.9375rem;
-}
-.weather-details {
-  font-size: 0.8125rem;
-}
-.station-heading > div > span {
-  font-size: 0.75rem;
-}
-.weather-station > small {
-  font-size: 0.75rem;
-}
-.section-heading .text-link {
-  font-size: 0.8125rem;
-}
-.topbar-left {
-  font-size: 0.875rem;
-}
-.checklist-item .icon-button {
-  min-width: 44px;
-}
-.brand small {
-  font-size: 0.5625rem;
-  letter-spacing: 1.3px;
-}
-.workspace-note {
-  font-size: 0.75rem;
-}
-.panel-footnote a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
-.sidebar {
-  overflow-y: auto;
-}
-.sidebar-user {
-  min-height: 85px;
-}
-.brand {
-  padding-inline: 8px;
-}
-.nav-label {
-  font-size: 0.625rem;
-}
-.nav-item {
-  gap: 11px;
-  padding-inline: 11px;
-}
-.flight-card-footer .muted {
-  display: none;
-}
-.flight-card-footer .text-link {
-  font-size: 0.8125rem;
-}
-.checklist-count {
-  white-space: nowrap;
-}
-.stat-label {
-  max-width: calc(100% - 28px);
-}
-@media (max-width: 1250px) {
-  .flight-dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-  .flight-overview {
-    grid-template-columns: 1fr 1fr;
-  }
-  .checklist-items {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 22px;
-  }
-  .checklist-card {
-    padding-bottom: 16px;
-  }
-  .flight-numbers {
-    gap: 15px;
-    justify-content: space-between;
-  }
-  .route-airports {
-    justify-content: space-between;
-    gap: 15px;
-  }
-  .route-airports > div > strong {
-    font-size: 1.8rem;
-  }
-  .dashboard-bottom-grid {
-    grid-template-columns: 1fr;
-  }
-  .sidebar {
-    width: 235px;
-  }
-  .app-shell {
-    margin-left: 235px;
-  }
-  .sidebar-bottom {
-    padding-top: 20px;
-  }
-  .profile-nav {
-    margin-bottom: 8px;
-  }
-}
-@media (max-width: 760px) {
-  .app-shell {
-    margin-left: 0;
-  }
-  .sidebar {
-    width: 270px;
-  }
-  .flight-overview {
-    grid-template-columns: 1fr;
-  }
-  .route-map {
-    min-height: 220px;
-  }
-  .checklist-items {
-    grid-template-columns: 1fr;
-  }
-  .topbar-left {
-    font-size: 0.8125rem;
-  }
-  .connection-status {
-    font-size: 0.75rem;
-  }
-  .topbar-right {
-    gap: 8px;
-  }
-  .topbar {
-    padding-inline: 12px;
-  }
-  .utc-clock {
-    display: none;
-  }
-  .flight-card-footer {
-    flex-wrap: wrap;
-    gap: 0;
-  }
-  .flight-card-footer > span {
-    margin-right: auto;
-  }
-  .flight-card-footer .text-link {
-    font-size: 0.75rem;
-  }
-  .workspace-note {
-    font-size: 0.75rem;
-  }
-  .brand small {
-    font-size: 0.625rem;
-  }
-  .sidebar nav {
-    gap: 4px;
-  }
-}
-
-@media (max-width: 760px) {
-  .sidebar {
-    visibility: hidden;
-  }
-  .sidebar.open {
-    visibility: visible;
-  }
-}
-
-.badge.green {
-  color: #14532d;
-}
-.nav-count {
-  color: #172021;
-}
-.brand small,
-.nav-label {
-  font-size: 0.75rem;
-  letter-spacing: 1px;
-}
-input:not([type="checkbox"]):not([type="radio"]),
-select,
-textarea {
-  border-color: #738077;
-}
-.button.secondary {
-  border-color: #738077;
 }

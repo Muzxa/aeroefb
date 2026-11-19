@@ -85,8 +85,7 @@
   font-size: 1.3rem;
   letter-spacing: 0.04em;
 }
-.station-icon,
-.tool-card-icon {
+.station-icon {
   width: 42px;
   height: 42px;
   display: flex;
@@ -96,8 +95,7 @@
   color: #1e40af;
   border-radius: 10px;
 }
-.station-icon svg,
-.tool-card-icon svg {
+.station-icon svg {
   width: 22px;
   height: 22px;
 }
@@ -166,32 +164,10 @@
   padding: 12px 16px;
   font-size: 0.87rem;
 }
-.notam-overview {
-  display: flex;
-  gap: 35px;
-  padding: 8px 0 4px;
-}
-.notam-overview > div {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-}
-.notam-overview strong {
-  font-size: 1.8rem;
-  font-weight: 650;
-}
-.notam-overview span {
-  font-size: 0.84rem;
-  color: #374151;
-}
-.notam-overview svg {
-  width: 21px;
-  height: 21px;
-  color: #1e40af;
-}
+
 .notam-toolbar {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) auto auto;
+  grid-template-columns: minmax(200px, 1fr) auto;
   align-items: center;
   gap: 12px;
   margin: 26px 0 19px;
@@ -275,28 +251,6 @@
 .notice-actions {
   gap: 4px;
 }
-.notice-delete {
-  color: #852c1c;
-}
-.tool-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 0.9rem;
-  margin: 18px 0;
-  cursor: pointer;
-  min-height: 44px;
-}
-.tool-checkbox input {
-  width: 20px;
-  height: 20px;
-  min-height: auto;
-  accent-color: #1e40af;
-}
-.modal-intro {
-  font-size: 0.85rem;
-  margin: 0 0 22px;
-}
 .full-width {
   grid-column: 1 / -1;
 }
@@ -306,12 +260,9 @@
   gap: 24px;
   align-items: start;
 }
-.loading-instruction {
-  font-size: 0.85rem;
-  margin: 22px 0 19px;
-}
 .loading-fields {
   display: grid;
+  margin-top: 22px;
   gap: 17px;
 }
 .loading-fields label {
@@ -440,11 +391,6 @@
 .balance-status p {
   margin: 3px 0 0;
 }
-.status-pass {
-  background: #edf7f0;
-  color: #14532d;
-  border: 1px solid #bdd9c6;
-}
 .status-review {
   background: #fff7eb;
   color: #78350f;
@@ -469,12 +415,6 @@
   font-size: 0.86rem;
   margin: 22px 0 8px;
   line-height: 1.9;
-}
-.profile-layout {
-  display: grid;
-  grid-template-columns: minmax(340px, 1.55fr) minmax(280px, 1fr);
-  gap: 24px;
-  align-items: start;
 }
 .profile-identity {
   display: flex;
@@ -507,64 +447,6 @@
   font-size: 0.82rem;
   overflow-wrap: anywhere;
 }
-.profile-identity > .badge {
-  margin-left: auto;
-}
-.profile-aside {
-  display: grid;
-  gap: 22px;
-}
-.profile-aside h2 {
-  font-size: 1.04rem;
-  margin: 17px 0 10px;
-}
-.profile-aside p {
-  font-size: 0.85rem;
-  line-height: 1.8;
-}
-.profile-aside .field-help {
-  font-size: 0.82rem;
-}
-.export-button {
-  width: 100%;
-  margin-top: 9px;
-  justify-content: center;
-}
-.workspace-details {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 35px;
-  margin-top: 24px;
-}
-.workspace-details h2 {
-  font-size: 1.2rem;
-  line-height: 1.5;
-  margin: 10px 0;
-}
-.workspace-details p {
-  font-size: 0.85rem;
-  max-width: 370px;
-}
-.workspace-details .eyebrow {
-  font-size: 0.82rem;
-}
-.workspace-details dl {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px 24px;
-  margin: 0;
-}
-.workspace-details dt {
-  color: #4b5563;
-  font-size: 0.82rem;
-  margin-bottom: 6px;
-}
-.workspace-details dd {
-  color: #1f2937;
-  font-size: 0.83rem;
-  margin: 0;
-  line-height: 1.7;
-}
 @media (max-width: 1100px) {
   .briefing-search-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -576,51 +458,32 @@
   .weather-station-grid {
     grid-template-columns: 1fr;
   }
-  .profile-layout {
-    grid-template-columns: 1fr;
-  }
-  .profile-aside {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .balance-layout {
     grid-template-columns: 1fr 1.2fr;
     gap: 17px;
   }
 }
 @media (max-width: 760px) {
-  .balance-layout,
-  .workspace-details {
+  .balance-layout {
     grid-template-columns: 1fr;
   }
-  .notam-overview {
-    gap: 18px;
-    flex-wrap: wrap;
-  }
-  .notam-overview > div:last-child {
-    flex-basis: 100%;
-  }
+
   .notam-toolbar {
     grid-template-columns: 1fr 1fr;
   }
   .notam-search {
     grid-column: 1 / -1;
   }
-  .notam-toolbar .button {
-    justify-content: center;
-  }
+
   .notice-bottom {
     align-items: flex-start;
   }
   .notice-actions {
     width: 100%;
   }
-  .profile-aside {
-    grid-template-columns: 1fr;
-  }
 }
 @media (max-width: 480px) {
-  .briefing-search-grid,
-  .workspace-details dl {
+  .briefing-search-grid {
     grid-template-columns: 1fr;
   }
   .briefing-load {
@@ -642,30 +505,16 @@
   .notice-validity {
     gap: 8px;
   }
-  .profile-identity > .badge {
-    margin-left: 73px;
-  }
 }
-@media print {
-  .balance-advisory {
-    font-size: 10pt;
-  }
-  .balance-layout {
-    grid-template-columns: 0.8fr 1.2fr;
-  }
-  .loading-reset,
-  .page-heading > button {
-    display: none;
-  }
-  .balance-chart {
-    max-width: 330px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .moments-card {
-    break-inside: avoid;
-  }
-  .balance-result {
-    break-inside: avoid;
+.notam-briefing-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.notam-fetch {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+@media (max-width: 620px) {
+  .notam-briefing-grid {
+    grid-template-columns: 1fr;
   }
 }

@@ -1,8 +1,19 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
-import Icon from "../components/Icon";
-import RouteMap from "../components/RouteMap";
+import {
+  AirplaneIcon,
+  AirplaneTiltIcon,
+  ArrowRightIcon,
+  BookOpenTextIcon,
+  CalendarBlankIcon,
+  CaretRightIcon,
+  ClockIcon,
+  CloudIcon,
+  MapTrifoldIcon,
+  PathIcon,
+  WindIcon,
+} from "@phosphor-icons/react";
 
 const airportNames = {
   OPLA: "Lahore",
@@ -15,15 +26,14 @@ const airportNames = {
 };
 const tasks = [
   [
-    "aircraft",
     "Aircraft & documents",
     "Review aircraft information",
     "/aircraft",
   ],
-  ["cloud", "Weather briefing", "Check current observations", "/weather"],
-  ["notam", "NOTAM briefing", "Review airport notices", "/notams"],
-  ["balance", "Weight & balance", "Calculate your loading", "/balance"],
-  ["compass", "Fuel & route", "Review your flight plan", "/flights"],
+  ["Weather briefing", "Check current observations", "/weather"],
+  ["NOTAM briefing", "Review airport notices", "/notams"],
+  ["Weight & balance", "Calculate your loading", "/balance"],
+  ["Fuel & route", "Review your flight plan", "/flights"],
 ];
 
 export default function Dashboard({
@@ -77,7 +87,7 @@ export default function Dashboard({
     try {
       await api(`/flights/${next._id}`, {
         method: "PUT",
-        body: { ...next, checklist },
+        body: { checklist },
       });
       await refresh();
     } catch (error) {
@@ -90,23 +100,18 @@ export default function Dashboard({
     <>
       <div className="page-heading dashboard-heading">
         <div>
-          <p className="eyebrow">A LITTLE PREPARATION. A BETTER FLIGHT.</p>
           <h1>
             Your flight deck<span className="heading-dot">.</span>
           </h1>
           <p className="page-intro">
-            Good to see you, {user.name.split(" ")[0]}. Let’s get your next
-            flight in order.
+            Good to see you, {user.name.split(" ")[0]}.
           </p>
         </div>
-        <Link className="button" to="/flights?new=1">
-          <Icon name="plus" size={19} /> New flight plan
-        </Link>
       </div>
       <div className="stats-grid">
         <div className="stat-card">
           <span className="stat-icon">
-            <Icon name="route" />
+            <PathIcon />
           </span>
           <span className="stat-label">Planned flights</span>
           <strong>
@@ -115,36 +120,30 @@ export default function Dashboard({
               .length.toString()
               .padStart(2, "0")}
           </strong>
-          <span className="stat-detail">Your upcoming journeys</span>
         </div>
         <div className="stat-card">
           <span className="stat-icon">
-            <Icon name="clock" />
+            <ClockIcon />
           </span>
           <span className="stat-label">Total flight time</span>
           <strong>
             {total.toFixed(1)}
             <small> hrs</small>
           </strong>
-          <span className="stat-detail">Recorded in your logbook</span>
         </div>
         <div className="stat-card">
           <span className="stat-icon">
-            <Icon name="aircraft" />
+            <AirplaneIcon />
           </span>
           <span className="stat-label">Your aircraft</span>
           <strong>{aircraft.length.toString().padStart(2, "0")}</strong>
-          <span className="stat-detail">Profiles in your hangar</span>
         </div>
         <div className="stat-card home-stat">
           <span className="stat-icon">
-            <Icon name="map" />
+            <MapTrifoldIcon />
           </span>
           <span className="stat-label">Home airport</span>
           <strong>{user.homeAirport || "—"}</strong>
-          <span className="stat-detail">
-            {airportNames[user.homeAirport] || "Set in your pilot profile"}
-          </span>
         </div>
       </div>
       <div className="flight-dashboard-grid">
@@ -154,93 +153,85 @@ export default function Dashboard({
         >
           <div className="section-heading">
             <h2 id="next-flight-title">
-              <Icon name="plane" /> Your next flight
+              <AirplaneTiltIcon /> Current Flight
             </h2>
-            <span className="badge blue">
-              {next ? next.flightRules : "Flight planning"}
-            </span>
+            {next && <span className="badge blue">{next.flightRules}</span>}
           </div>
           {next ? (
             <>
-              <div className="flight-overview">
-                <div className="flight-overview-details">
-                  <div className="route-airports">
-                    <div>
-                      <span className="eyebrow">DEPARTURE</span>
-                      <strong>{next.departure}</strong>
-                      <span>
-                        {airportNames[next.departure] || "Departure airport"}
-                      </span>
-                    </div>
-                    <Icon name="arrow" size={26} />
-                    <div>
-                      <span className="eyebrow">DESTINATION</span>
-                      <strong>{next.destination}</strong>
-                      <span>
-                        {airportNames[next.destination] ||
-                          "Destination airport"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flight-meta">
+              <div className="flight-overview-details">
+                <div className="route-airports">
+                  <div>
+                    <span className="eyebrow">DEPARTURE</span>
+                    <strong>{next.departure}</strong>
                     <span>
-                      <Icon name="calendar" size={16} />
-                      {new Date(`${next.date}T00:00:00`).toLocaleDateString(
-                        "en-GB",
-                        { day: "numeric", month: "short", year: "numeric" },
-                      )}
-                    </span>
-                    <span>
-                      <Icon name="clock" size={16} />
-                      {next.departureTime} UTC
+                      {airportNames[next.departure] || "Departure airport"}
                     </span>
                   </div>
-                  <div className="flight-numbers">
-                    <div>
-                      <span>Aircraft</span>
-                      <strong>{next.aircraftRegistration}</strong>
-                    </div>
-                    <div>
-                      <span>Altitude</span>
-                      <strong>
-                        {Number(next.altitude).toLocaleString()}{" "}
-                        <small>ft</small>
-                      </strong>
-                    </div>
-                    <div>
-                      <span>Est. duration</span>
-                      <strong>
-                        {Number(next.duration).toFixed(1)} <small>hrs</small>
-                      </strong>
-                    </div>
+                  <ArrowRightIcon size={26} />
+                  <div>
+                    <span className="eyebrow">DESTINATION</span>
+                    <strong>{next.destination}</strong>
+                    <span>
+                      {airportNames[next.destination] ||
+                        "Destination airport"}
+                    </span>
                   </div>
                 </div>
-                <RouteMap
-                  departure={next.departure}
-                  destination={next.destination}
-                />
+                <div className="flight-meta">
+                  <span>
+                    <CalendarBlankIcon size={16} />
+                    {new Date(`${next.date}T00:00:00`).toLocaleDateString(
+                      "en-GB",
+                      { day: "numeric", month: "short", year: "numeric" },
+                    )}
+                  </span>
+                  <span>
+                    <ClockIcon size={16} />
+                    {next.departureTime} UTC
+                  </span>
+                </div>
+                <div className="flight-numbers">
+                  <div>
+                    <span>Aircraft</span>
+                    <strong>{next.aircraftRegistration}</strong>
+                  </div>
+                  <div>
+                    <span>Altitude</span>
+                    <strong>
+                      {Number(next.altitude).toLocaleString()}{" "}
+                      <small>ft</small>
+                    </strong>
+                  </div>
+                  <div>
+                    <span>Est. duration</span>
+                    <strong>
+                      {Number(next.duration).toFixed(1)} <small>hrs</small>
+                    </strong>
+                  </div>
+                </div>
               </div>
               <div className="flight-card-footer">
-                <span>
-                  <span className="status-dot" /> Plan saved{" "}
-                  <span className="muted">· Review before flight</span>
-                </span>
                 <Link to={`/flights?edit=${next._id}`} className="text-link">
-                  View flight plan <Icon name="arrow" size={17} />
+                  View flight plan <ArrowRightIcon size={17} />
                 </Link>
               </div>
             </>
           ) : (
             <div className="empty-state">
-              <Icon name="route" size={40} />
-              <h3>Your next adventure starts here.</h3>
-              <p>Add an aircraft, then create your first flight plan.</p>
+              <PathIcon size={40} />
+              <h3>No active flight</h3>
+              <p>
+                {aircraft.length
+                  ? "Create your first flight plan."
+                  : "Add an aircraft, then create your first flight plan."}
+              </p>
               <Link
                 className="button secondary"
                 to={aircraft.length ? "/flights?new=1" : "/aircraft"}
               >
                 {aircraft.length ? "Plan a flight" : "Add an aircraft"}
-                <Icon name="arrow" size={17} />
+                <ArrowRightIcon size={17} />
               </Link>
             </div>
           )}
@@ -256,9 +247,6 @@ export default function Dashboard({
               <span>/5</span>
             </span>
           </div>
-          <p className="muted checklist-intro">
-            A few checks before you take off.
-          </p>
           <div
             className="checklist-progress"
             role="progressbar"
@@ -270,7 +258,7 @@ export default function Dashboard({
             <span style={{ width: `${completed * 20}%` }} />
           </div>
           <div className="checklist-items">
-            {tasks.map(([icon, title, subtitle, url], index) => (
+            {tasks.map(([title, subtitle, url], index) => (
               <div className="checklist-item" key={title}>
                 <input
                   type="checkbox"
@@ -289,30 +277,23 @@ export default function Dashboard({
                   className="icon-button"
                   aria-label={`Open ${title}`}
                 >
-                  <Icon name="chevron" size={16} />
+                  <CaretRightIcon size={16} />
                 </Link>
               </div>
             ))}
           </div>
-          <p className="checklist-note">
-            <Icon name="info" size={14} /> Personal review list; not an
-            airworthiness check.
-          </p>
         </section>
       </div>
       <div className="dashboard-bottom-grid">
         <section className="card weather-preview">
           <div className="section-heading">
             <h2>
-              <Icon name="cloud" /> Airport weather
+              <CloudIcon /> Airport weather
             </h2>
             <Link className="text-link" to="/weather">
-              Full briefing <Icon name="arrow" size={17} />
+              Full briefing <ArrowRightIcon size={17} />
             </Link>
           </div>
-          <p className="panel-description">
-            Latest available airport observations.
-          </p>
           <div className="weather-stations">
             {ids.split(",").map((id) => {
               const metar = weather?.metars?.find((m) => m.icaoId === id);
@@ -338,7 +319,7 @@ export default function Dashboard({
                   {metar ? (
                     <>
                       <div className="station-temperature">
-                        <Icon name="cloud" size={33} />
+                        <CloudIcon size={33} />
                         <strong>
                           {metar.temp ?? "—"}
                           <small> °C</small>
@@ -346,7 +327,7 @@ export default function Dashboard({
                       </div>
                       <div className="weather-details">
                         <span>
-                          <Icon name="wind" size={16} />
+                          <WindIcon size={16} />
                           {metar.wdir === "VRB"
                             ? "VRB"
                             : `${metar.wdir ?? "—"}°`}{" "}
@@ -395,15 +376,12 @@ export default function Dashboard({
         <section className="card recent-flights">
           <div className="section-heading">
             <h2>
-              <Icon name="book" /> Recent logbook
+              <BookOpenTextIcon /> Recent logbook
             </h2>
             <Link className="text-link" to="/logbook">
-              View logbook <Icon name="arrow" size={17} />
+              View logbook <ArrowRightIcon size={17} />
             </Link>
           </div>
-          <p className="panel-description">
-            A record of the places you’ve been.
-          </p>
           {logbook.length ? (
             <div className="recent-list">
               {[...logbook]
@@ -412,12 +390,12 @@ export default function Dashboard({
                 .map((entry) => (
                   <Link to="/logbook" className="recent-row" key={entry._id}>
                     <span className="recent-plane">
-                      <Icon name="plane" size={20} />
+                      <AirplaneTiltIcon size={20} />
                     </span>
                     <div>
                       <strong>
                         {entry.departure}
-                        <span className="route-separator">→</span>
+                        <ArrowRightIcon className="route-separator" size={14} />
                         {entry.destination}
                       </strong>
                       <span>
@@ -433,7 +411,7 @@ export default function Dashboard({
                       {Number(entry.totalTime).toFixed(1)}
                       <small> hrs</small>
                     </strong>
-                    <Icon name="chevron" size={16} />
+                    <CaretRightIcon size={16} />
                   </Link>
                 ))}
             </div>
@@ -441,23 +419,11 @@ export default function Dashboard({
             <div className="empty-state small">
               <p>No flights logged yet.</p>
               <Link to="/logbook" className="text-link">
-                Add your first entry <Icon name="arrow" size={16} />
+                Add your first entry <ArrowRightIcon size={16} />
               </Link>
             </div>
           )}
-          <div className="dashboard-logbook-note">
-            <Icon name="compass" size={17} />
-            <span>Every flight tells a story. Keep yours.</span>
-          </div>
         </section>
-      </div>
-      <div className="workspace-note">
-        <Icon name="shield" size={17} />
-        <span>
-          Built for preparation. This student project is not an approved source
-          for operational flight decisions.
-        </span>
-        <span className="workspace-note-brand">AeroEFB / 01</span>
       </div>
     </>
   );
