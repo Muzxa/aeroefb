@@ -20,7 +20,7 @@ Open **http://127.0.0.1:5173**. The API runs on port **5001**. The default Mongo
 
 On this machine, dependencies are already installed and MongoDB was running during setup.
 
-The first visit opens the login page. Sign in or choose **Create account** to open your dashboard. New accounts start empty, ready for your own aircraft, flight plans, logbook entries and notices.
+The first visit opens the login page. Sign in or choose **Create account** to open your dashboard. New accounts start empty, ready for your own aircraft, flight plans, and logbook entries.
 
 If you prefer separate terminals:
 
@@ -34,17 +34,16 @@ npm run dev --prefix client
 - Registration, sign-in, sign-out, and pilot profile editing. Passwords are hashed; sessions use HTTP-only cookies and MongoDB storage.
 - Aircraft profiles with editable weight, arms, CG limits, fuel, cruise, equipment, and notes.
 - Flight planning, saved routes, aircraft selection, timing, fuel, and a five-item personal review checklist.
-- Weight and balance worksheet: station moments, total weight, CG, maximum weight and fuel-capacity checks, a chart, and printing.
+- Weight and balance worksheet: station moments, total weight, CG, maximum weight and fuel-capacity checks, and a chart.
 - Live METAR/TAF briefings through the free [Aviation Weather Center API](https://aviationweather.gov/data/api/). No weather API key is needed. Missing reports and provider failures are shown explicitly.
-- Saved NOTAMs: manual import, source and validity dates, airport/route filtering, review status, editing, and deletion. **Live NOTAM retrieval is not integrated.** The [ICAO service](https://dataservices.icao.int/) and [FAA API access](https://www.faa.gov/about/initiatives/notam) require provider access.
+- NOTAM briefing: active airport notices from [NOTAC](https://notac.aero/api/search-notams/) with a server-side `NOTAC_API_KEY` in `server/.env`. The briefing fetches automatically for the profile home airport and for selected saved flights. You can also enter airport codes and fetch manually. Review status is saved to your account.
 - Logbook with PIC, SIC, IFR, night, approaches, landings, totals, and CSV export. A saved flight can become a logbook entry; duplicate flight links are blocked.
-- Personal JSON export from the profile page.
 
 ## Offline reading
 
 The browser keeps previously loaded record lists and weather responses in `localStorage`, scoped to the current account. The app must already be open if the local server becomes unreachable. Reconnect to make changes; a previously loaded weather report is not current weather. Signing out removes that account’s browser cache.
 
-When the local Node server is running, the built app itself can also load without an internet connection. Internet access is needed to retrieve new weather. This project intentionally does not introduce service workers, IndexedDB or a background sync queue because they were not in the supplied slides.
+When Vite and the local API are running, the app can also load without an internet connection. Internet access is needed to retrieve new weather and live NOTAMs. The live NOTAM search displays results for the selected airports during that briefing. This project intentionally does not introduce service workers, IndexedDB or a background sync queue because they were not in the supplied slides.
 
 ## Accessibility
 
@@ -56,21 +55,13 @@ Uses semantic landmarks, a skip link, labeled forms, native modal dialogs, keybo
 npm run build
 ```
 
-
-To serve the built React application from Express:
-
-```bash
-npm run build
-npm start
-```
-
-Then open **http://localhost:5001**. Restart the server after the first build so Express finds the generated `client/dist` folder. `NODE_ENV=production` requires HTTPS and a real session secret; use `development` for local HTTP.
+Vite writes the production frontend to `client/dist`. For local development, use `npm run dev` and open **http://127.0.0.1:5173**. Vite serves the frontend and proxies `/api` to Express on port **5001**. The root `npm start` command starts the API by itself.
 
 ## Folder guide
 
 ```text
 client/src/
-  components/    Shared icons, dialog, sign-in form, route illustration
+  components/    Dialogs and sign-in form
   pages/         Dashboard and the project’s feature pages
   store/         Redux Toolkit store for the signed-in pilot
   api.js         Fetch helper and account-scoped browser cache
@@ -79,14 +70,14 @@ client/src/
 server/
   models/        Mongoose schemas and validation
   controllers/   Authentication and resource CRUD
-  middleware/    Session authentication and input helpers
+  middleware/    Request validation helpers
   routes/        Express API routes
-  app.js         Express middleware and static React serving
+  app.js         Express middleware and API setup
   index.js       MongoDB connection and server startup
 ```
 
 `bcryptjs` adds password hashing and `connect-mongo` persists the taught Express sessions. Calculations use ordinary JavaScript arithmetic.
 
-The calculator uses a simplified constant CG range and avgas at 6 lb/US gal; it does not replace an approved POH envelope. Route art is a schematic. This student project is not approved for operational flight planning or navigation.
+The calculator uses a simplified constant CG range and avgas at 6 lb/US gal; it does not replace an approved POH envelope. This student project is not approved for operational flight planning or navigation.
 
 The repository contains both the React client and the Express/MongoDB server.
