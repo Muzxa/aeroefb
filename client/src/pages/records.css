@@ -249,21 +249,8 @@
   margin: 0;
   color: #374151;
 }
-.aircraft-drawing {
-  height: 112px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1e40af;
-  margin: 10px 0 20px;
-  border-radius: 6px;
-  background: #f7f8fa;
-}
-.aircraft-drawing svg {
-  width: 85%;
-  max-height: 110px;
-}
 .aircraft-stats {
+  margin-top: 20px;
   padding-bottom: 20px;
   border-bottom: 1px solid #d7dce2;
 }

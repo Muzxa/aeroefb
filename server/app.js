@@ -26,7 +26,7 @@ app.use(
     credentials: true,
   }),
 );
-app.use(express.json({ limit: "100kb" }));
+app.use(express.json());
 app.use(
   session({
     name: "aeroefb.sid",

@@ -90,14 +90,13 @@ exports.remove = async (req, res) => {
   const plannedFlight = await Flight.exists({
     user: req.user._id,
     aircraftId: aircraft._id,
-    status: "Planned",
   });
   if (plannedFlight)
     return res
       .status(409)
       .json({
         message:
-          "This aircraft is assigned to a planned flight. Reassign or delete the flight first.",
+          "This aircraft is assigned to a saved flight. Reassign or delete the flight first.",
       });
   await aircraft.deleteOne();
   res.json({ message: "Aircraft deleted." });

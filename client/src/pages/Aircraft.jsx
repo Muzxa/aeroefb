@@ -241,28 +241,6 @@ export default function Aircraft({ aircraft = [], refreshAfterChange, online }) 
                 <p className="record-registration">{item.registration}</p>
                 <h2>{item.model}</h2>
               </div>
-              <div className="aircraft-drawing" aria-hidden="true">
-                <svg viewBox="0 0 360 100" fill="none">
-                  <path
-                    d="M22 60h22l22-19 48-5 22-22h33l-8 21h85l25 9 38 7 25 8-11 9h-69l-39 18h-35l14-18H74l-22-5H22z"
-                    fill="currentColor"
-                    opacity=".09"
-                  />
-                  <path
-                    d="M22 60h22l22-19 48-5 22-22h33l-8 21h85l25 9 38 7 25 8-11 9h-69l-39 18h-35l14-18H74l-22-5H22z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="m130 36 15 24M245 35l-5 17h40M75 68v8m185-8v8"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  />
-                  <circle cx="75" cy="80" r="5" fill="currentColor" />
-                  <circle cx="260" cy="80" r="5" fill="currentColor" />
-                </svg>
-              </div>
               <dl className="record-stats aircraft-stats">
                 <div>
                   <dt>Cruise speed</dt>
@@ -535,7 +513,7 @@ export default function Aircraft({ aircraft = [], refreshAfterChange, online }) 
           onDeleted={() => refreshAfterChange("Aircraft removed.")}
         >
           This will remove this aircraft profile. An aircraft assigned to a
-          planned flight must be reassigned or its flight plan deleted first.
+          saved flight can be removed once the flight is reassigned or deleted.
         </DeleteRecordDialog>
       )}
     </>
